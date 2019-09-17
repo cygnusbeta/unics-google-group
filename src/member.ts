@@ -10,6 +10,13 @@ class Member {
   }
 
   addTo(group: Group) {
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
+    group.confirmCreated({
+      memberKey,
+      groupKey
+    });
+
     //  POST a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members`;
     const data = {
@@ -22,8 +29,6 @@ class Member {
       // Convert the JavaScript object to a JSON string.
       payload: JSON.stringify(data)
     };
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの追加に失敗しました。', {
       memberKey,
       groupKey
@@ -32,13 +37,18 @@ class Member {
   }
 
   deleteFrom(group: Group) {
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
+    group.confirmCreated({
+      memberKey,
+      groupKey
+    });
+
     //  DELETE a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members/<memberKey>
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members/${this.memberKey}`;
     const params = {
       method: 'delete'
     };
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの削除に失敗しました。', {
       memberKey,
       groupKey
@@ -47,12 +57,17 @@ class Member {
   }
 
   getRoleIn(group: Group) {
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
+    group.confirmCreated({
+      memberKey,
+      groupKey
+    });
+
     //  与えられたメンバーの与えられたグループ上での現在のメール送信権限を取得する
     //  GET https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members/<memberKey>
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members/${this.memberKey}`;
     const params = {};
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(
       url,
       params,
