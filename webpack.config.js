@@ -3,7 +3,9 @@ const GasPlugin = require("gas-webpack-plugin");
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.ts',
+  entry: [
+    './src/OnFormsSubmit/registration.ts'
+  ],
   devtool: false,
   output: {
     filename: 'bundle.js',

@@ -17,6 +17,9 @@ dist/
 # Credentials
 .clasp.json
 
+# secret
+/src/secret.ts
+
 # Other hidden files
 /.*
 !/.gitignore

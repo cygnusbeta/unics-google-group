@@ -1,8 +1,8 @@
 import { Group } from './group';
 import { UrlFetchService } from './urlFetch.service';
-import { logVar } from './logger';
+import { logVar, logVars } from './logger';
 
-class Member {
+export class Member {
   private memberKey: string;
 
   constructor(email: string) {
@@ -10,12 +10,7 @@ class Member {
   }
 
   addTo(group: Group) {
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
-    group.confirmCreated({
-      memberKey,
-      groupKey
-    });
+    this.confirmBelongToOrNotTo(group, false);
 
     //  POST a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members`;
@@ -29,6 +24,8 @@ class Member {
       // Convert the JavaScript object to a JSON string.
       payload: JSON.stringify(data)
     };
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの追加に失敗しました。', {
       memberKey,
       groupKey
@@ -37,18 +34,15 @@ class Member {
   }
 
   deleteFrom(group: Group) {
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
-    group.confirmCreated({
-      memberKey,
-      groupKey
-    });
+    this.confirmBelongToOrNotTo(group, true);
 
     //  DELETE a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members/<memberKey>
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members/${this.memberKey}`;
     const params = {
       method: 'delete'
     };
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの削除に失敗しました。', {
       memberKey,
       groupKey
@@ -57,17 +51,14 @@ class Member {
   }
 
   getRoleIn(group: Group) {
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
-    group.confirmCreated({
-      memberKey,
-      groupKey
-    });
+    this.confirmBelongToOrNotTo(group, true);
 
     //  与えられたメンバーの与えられたグループ上での現在のメール送信権限を取得する
     //  GET https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members/<memberKey>
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members/${this.memberKey}`;
     const params = {};
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(
       url,
       params,
@@ -118,5 +109,45 @@ class Member {
       newRole
     });
     fetch.run();
+  }
+
+  isBelongTo(group: Group) {
+    const memberKey = this.memberKey;
+    const groupKey = group.groupKey;
+    group.confirmCreated({
+      memberKey,
+      groupKey
+    });
+
+    const groupGasObj = GroupsApp.getGroupByEmail(group.groupKey);
+    return groupGasObj.hasUser(this.memberKey);
+  }
+
+  confirmBelongToOrNotTo(group: Group, expected: boolean) {
+    if (this.isBelongTo(group) !== expected) {
+      const memberKey = this.memberKey;
+      const groupKey = group.groupKey;
+      const logOtherVars: string = logVars({
+        memberKey,
+        groupKey
+      });
+
+      let msg = '';
+      if (expected) {
+        msg = `メンバー ${this.memberKey} は、グループ ${group.groupKey} に属していません。属していないグループに対するそのメンバーの操作は「そのメンバーの追加」以外はできません。
+
+${logOtherVars}`;
+      } else {
+        msg = `メンバー ${this.memberKey} は、グループ ${group.groupKey} に既に属しています。既に属しているグループにそのメンバーを新たに追加することはできません。
+
+${logOtherVars}`;
+      }
+
+      throw new Error(msg);
+    }
+  }
+
+  getGroupsBelongingTo() {
+    // その memberKey（メールアドレス）が属しているグループ一覧を取得
   }
 }
