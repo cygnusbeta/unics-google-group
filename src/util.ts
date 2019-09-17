@@ -3,3 +3,7 @@ export const getNowSchoolYear = (date = new Date()) => {
   date.setMonth(month - 4);
   return date.getFullYear();
 };
+
+export const sleep = (second: number): void => {
+  Utilities.sleep(second * 1000);
+};

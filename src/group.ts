@@ -1,4 +1,4 @@
-import { getNowSchoolYear } from './util';
+import { getNowSchoolYear, sleep } from './util';
 import { logVar, logVars } from './logger';
 import { UrlFetchService } from './urlFetch.service';
 
@@ -18,7 +18,7 @@ export class Group {
     }
 
     this.groupKey = email;
-    this.created = created;
+    this.created = this.isCreated();
   }
 
   initUsingCampus(campus: '水戸' | '日立', created: boolean = true) {
@@ -46,7 +46,16 @@ ${logVar({ campus })}`;
         throw new Error(errMsg);
     }
 
-    this.created = created;
+    this.created = this.isCreated();
+  }
+
+  isCreated(): boolean {
+    try {
+      GroupsApp.getGroupByEmail(this.groupKey);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   create(name: string, otherVars4Log: object): void {
@@ -84,11 +93,16 @@ ${logOtherVars}`;
     );
     fetch.run();
 
-    this.created = true;
+    sleep(5);
+
+    this.created = this.isCreated();
   }
 
   confirmCreated(otherVars4Log: object): void {
-    if (this.created === false) {
+    // グループが既に作成されているかどうかは初期化時に確認済みなので、ここでは this.created ===
+    // true のときは this.isCreated を参照しない。（this.created ===
+    // false のときは念の為もう一度確認する。依然として false が帰ってきたらエラーを吐く。）
+    if (!this.created && !this.isCreated()) {
       const logOtherVars: string = logVars(otherVars4Log);
       const msg = `グループ ${this.groupKey} はまだ作成されていません。作成されていないグループのメンバー操作はできません。
 
