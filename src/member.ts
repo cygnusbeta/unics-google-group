@@ -9,7 +9,7 @@ export class Member {
     this.memberKey = email;
   }
 
-  addTo(group: Group) {
+  addTo(group: Group): void {
     this.confirmBelongToOrNotTo(group, false);
 
     //  POST a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members
@@ -33,7 +33,7 @@ export class Member {
     fetch.run();
   }
 
-  deleteFrom(group: Group) {
+  deleteFrom(group: Group): void {
     this.confirmBelongToOrNotTo(group, true);
 
     //  DELETE a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members/<memberKey>
@@ -50,7 +50,7 @@ export class Member {
     fetch.run();
   }
 
-  getRoleIn(group: Group) {
+  getRoleIn(group: Group): 'MEMBER' | 'MANAGER' {
     this.confirmBelongToOrNotTo(group, true);
 
     //  与えられたメンバーの与えられたグループ上での現在のメール送信権限を取得する
@@ -78,7 +78,7 @@ export class Member {
     return nowRole;
   }
 
-  updateRoleIn(group: Group, newRole: 'MEMBER' | 'MANAGER') {
+  updateRoleIn(group: Group, newRole: 'MEMBER' | 'MANAGER'): void {
     console.log(`グループ ${group.groupKey}`);
     const nowRole: 'MEMBER' | 'MANAGER' = this.getRoleIn(group);
     if (newRole === nowRole) {
@@ -111,7 +111,7 @@ export class Member {
     fetch.run();
   }
 
-  isBelongTo(group: Group) {
+  isBelongTo(group: Group): boolean {
     const memberKey = this.memberKey;
     const groupKey = group.groupKey;
     group.confirmCreated({
@@ -123,7 +123,7 @@ export class Member {
     return groupGasObj.hasUser(this.memberKey);
   }
 
-  confirmBelongToOrNotTo(group: Group, expected: boolean) {
+  confirmBelongToOrNotTo(group: Group, expected: boolean): void {
     if (this.isBelongTo(group) !== expected) {
       const memberKey = this.memberKey;
       const groupKey = group.groupKey;
@@ -147,7 +147,36 @@ ${logOtherVars}`;
     }
   }
 
-  getGroupsBelongingTo() {
+  getGroupKeysBelongingTo(): string[] {
     // その memberKey（メールアドレス）が属しているグループ一覧を取得
+    //  GET https://www.googleapis.com/admin/directory/v1/groups
+    // ?query=[memberKey=<memberKey>]
+    // [] 内は urlEncoded
+    const query = `memberKey=${this.memberKey}`;
+    const queryUrlEncorded: string = encodeURIComponent(query);
+    const url = `https://www.googleapis.com/admin/directory/v1/groups?query=${queryUrlEncorded}`;
+    const params = {};
+    const memberKey = this.memberKey;
+    let fetch = new UrlFetchService(
+      url,
+      params,
+      200,
+      `メンバー (${this.memberKey}) の属しているグループ一覧の取得に失敗しました。`,
+      {
+        memberKey
+      }
+    );
+    fetch.run();
+    const json: string = fetch.text;
+    const data: object = JSON.parse(json);
+    logVar({ data });
+    const groupsResorce: object[] = data['groups'];
+    let groupKeys: string[] = [];
+    groupsResorce.forEach((groupResorce: object) => {
+      let groupKey: string = groupResorce['email'];
+      logVar({ groupKey });
+      groupKeys.push(groupKey);
+    });
+    return groupKeys; // [a@googlegroups.com, b@googlegroups.com, ...]
   }
 }

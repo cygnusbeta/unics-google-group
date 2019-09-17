@@ -21,7 +21,7 @@ export class Group {
     this.created = this.isCreated();
   }
 
-  initUsingCampus(campus: '水戸' | '日立', created: boolean = true) {
+  initUsingCampus(campus: '水戸' | '日立', created: boolean = true): void {
     if (this.groupKey) {
       const groupKey = this.groupKey;
       const errMsg = `この Group object は既に初期化されています。
