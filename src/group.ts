@@ -10,9 +10,8 @@ export class Group {
 
   initUsingEmail(email: string, created: boolean = true) {
     if (this.groupKey) {
-      const groupKey = this.groupKey;
       const errMsg = `この Group object は既に初期化されています。
-最初の初期化時 ${logVar({ groupKey })}
+最初の初期化時 ${logVar({ groupKey: this.groupKey })}
 2度目の初期化時 ${logVar({ email })}`;
       throw new Error(errMsg);
     }
@@ -23,9 +22,8 @@ export class Group {
 
   initUsingCampus(campus: '水戸' | '日立', created: boolean = true): void {
     if (this.groupKey) {
-      const groupKey = this.groupKey;
       const errMsg = `この Group object は既に初期化されています。
-最初の初期化時 ${logVar({ groupKey })}
+最初の初期化時 ${logVar({ groupKey: this.groupKey })}
 2度目の初期化時 ${logVar({ campus })}`;
       throw new Error(errMsg);
     }
@@ -81,14 +79,13 @@ ${logOtherVars}`;
       payload: JSON.stringify(data)
     };
 
-    const groupKey = this.groupKey;
     let fetch = new UrlFetchService(
       url,
       params,
       201,
       `新しいメーリングリスト ${name} の作成に失敗しました。`,
       {
-        groupKey
+        groupKey: this.groupKey
       }
     );
     fetch.run();

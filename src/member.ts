@@ -24,11 +24,9 @@ export class Member {
       // Convert the JavaScript object to a JSON string.
       payload: JSON.stringify(data)
     };
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの追加に失敗しました。', {
-      memberKey,
-      groupKey
+      memberKey: this.memberKey,
+      groupKey: group.groupKey
     });
     fetch.run();
   }
@@ -41,11 +39,9 @@ export class Member {
     const params = {
       method: 'delete'
     };
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの削除に失敗しました。', {
-      memberKey,
-      groupKey
+      memberKey: this.memberKey,
+      groupKey: group.groupKey
     });
     fetch.run();
   }
@@ -57,16 +53,14 @@ export class Member {
     //  GET https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members/<memberKey>
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members/${this.memberKey}`;
     const params = {};
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(
       url,
       params,
       200,
       `グループ (${group.groupKey}) での現在のメール送信権限の取得に失敗しました。`,
       {
-        memberKey,
-        groupKey
+        memberKey: this.memberKey,
+        groupKey: group.groupKey
       }
     );
     fetch.run();
@@ -100,11 +94,9 @@ export class Member {
       // Convert the JavaScript object to a JSON string.
       payload: JSON.stringify(data)
     };
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     let fetch = new UrlFetchService(url, params, 200, 'メンバーの送信権限の変更に失敗しました。', {
-      memberKey,
-      groupKey,
+      memberKey: this.memberKey,
+      groupKey: group.groupKey,
       nowRole,
       newRole
     });
@@ -112,11 +104,9 @@ export class Member {
   }
 
   isBelongTo(group: Group): boolean {
-    const memberKey = this.memberKey;
-    const groupKey = group.groupKey;
     group.confirmCreated({
-      memberKey,
-      groupKey
+      memberKey: this.memberKey,
+      groupKey: group.groupKey
     });
 
     const groupGasObj = GroupsApp.getGroupByEmail(group.groupKey);
@@ -125,11 +115,9 @@ export class Member {
 
   confirmBelongToOrNotTo(group: Group, expected: boolean): void {
     if (this.isBelongTo(group) !== expected) {
-      const memberKey = this.memberKey;
-      const groupKey = group.groupKey;
       const logOtherVars: string = logVars({
-        memberKey,
-        groupKey
+        memberKey: this.memberKey,
+        groupKey: group.groupKey
       });
 
       let msg = '';
@@ -156,14 +144,13 @@ ${logOtherVars}`;
     const queryUrlEncorded: string = encodeURIComponent(query);
     const url = `https://www.googleapis.com/admin/directory/v1/groups?query=${queryUrlEncorded}`;
     const params = {};
-    const memberKey = this.memberKey;
     let fetch = new UrlFetchService(
       url,
       params,
       200,
       `メンバー (${this.memberKey}) の属しているグループ一覧の取得に失敗しました。`,
       {
-        memberKey
+        memberKey: this.memberKey
       }
     );
     fetch.run();

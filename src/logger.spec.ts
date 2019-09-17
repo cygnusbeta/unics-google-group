@@ -19,3 +19,18 @@ varName2: value2`;
     expect(logVars(vars)).toBe(expected);
   });
 });
+
+describe('logger', () => {
+  it('logVar({ varName: obj.varName })', () => {
+    let obj = new Class();
+    expect(logVar({ varName: obj.varName })).toBe('varName: value');
+  });
+});
+
+class Class {
+  public varName: string;
+
+  constructor() {
+    this.varName = 'value';
+  }
+}
