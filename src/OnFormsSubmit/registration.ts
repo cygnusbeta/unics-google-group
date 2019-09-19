@@ -4,6 +4,8 @@ import { Group } from '../group';
 import { getNowSchoolYear } from '../util';
 import secret from '../secret';
 import { logVar } from '../logger';
+import { SpreadSheetService } from '../spreadSheet.service';
+import { SheetService } from '../sheet.service';
 
 declare var global: any;
 
@@ -15,12 +17,12 @@ global.onRegistrationFormSubmit = (e: FormsOnSubmit) => {
   member.addTo(group);
   o.updateGroupsRoleSince2019();
 
-  o.add2SS;
+  o.add2SS();
   o.add2Contacts();
   o.sendDiscordInvitation();
 };
 
-class Registration {
+export class Registration {
   public email: string;
   public name: string;
   public phonetic: string;
@@ -31,30 +33,40 @@ class Registration {
   public department: string;
   public campus: '水戸' | '日立';
   public permission: '希望する' | '';
+  private sheet: SheetService;
+  private test: boolean;
 
-  constructor(e: FormsOnSubmit) {
-    this.email = e.namedValues['メールアドレス'][0];
-    this.name = e.namedValues['氏名'][0];
-    this.phonetic = e.namedValues['氏名のふりがな'][0];
-    this.year = e.namedValues['学年'][0];
-    this.id = e.namedValues['学籍番号'][0];
-    this.id2 = e.namedValues['前の学籍番号'][0];
-    this.id3 = e.namedValues['前々の学籍番号'][0];
-    this.department = e.namedValues['学部学科課程'][0];
-    this.campus = e.namedValues['所属キャンパス'][0] as '水戸' | '日立';
-    this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
+  constructor(
+    e: FormsOnSubmit,
+    sheet: SheetService = new SpreadSheetService().getSheet('registration'),
+    test: boolean = false
+  ) {
+    this.sheet = sheet;
+    this.test = test;
+    if (!this.test) {
+      this.email = e.namedValues['メールアドレス'][0];
+      this.name = e.namedValues['氏名'][0];
+      this.phonetic = e.namedValues['氏名のふりがな'][0];
+      this.year = e.namedValues['学年'][0];
+      this.id = e.namedValues['学籍番号'][0];
+      this.id2 = e.namedValues['前の学籍番号'][0];
+      this.id3 = e.namedValues['前々の学籍番号'][0];
+      this.department = e.namedValues['学部学科課程'][0];
+      this.campus = e.namedValues['所属キャンパス'][0] as '水戸' | '日立';
+      this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
+    }
   }
 
-  updateGroupsRoleSince2019() {
+  updateGroupsRoleSince2019(): void {
     // 2019 年度からの全てのメーリングリストの送信権限を更新する。
     // 学籍番号が属しているメーリングリスト一覧を取得 → それ全てに対して権限を更新
   }
 
-  add2SS() {
+  add2SS(): void {
     //　フォームへの回答を同じスプレッドシートの水戸と日立のタブに振り分ける
   }
 
-  add2Contacts() {
+  add2Contacts(): void {
     if (this.name == '' || this.email == '') return;
 
     let contact = ContactsApp.createContact('', this.name, this.email);
@@ -63,7 +75,7 @@ class Registration {
     contact.addToGroup(group);
   }
 
-  sendDiscordInvitation() {
+  sendDiscordInvitation(): void {
     const name = this.name;
     logVar({ name });
     const email = this.email;
@@ -99,7 +111,50 @@ ${secret.discordLink}
     GmailApp.sendEmail(this.email, sub, body, { htmlBody: htmlBody, from: from });
   }
 
-  getAllGroupThatMemberBelongTo(o) {
-    //  複数の学籍番号が属しているメーリングリスト一覧を取得
+  getAllMemberKeysUsingIds(ids4Test: string[] = undefined): string[] {
+    if ((ids4Test && !this.test) || (!ids4Test && this.test)) {
+      throw new Error(
+        'this.test と ids4Test でテストなのかテストじゃないのかが食い違っています。どちらかに統一してください。'
+      );
+    }
+    if (ids4Test.length !== 3) {
+      throw new Error('ids4test.length === 3 が予期されています。');
+    }
+    if (ids4Test) {
+      this.id = ids4Test[0];
+      this.id2 = ids4Test[1];
+      this.id3 = ids4Test[2];
+    }
+
+    let ids: string[] = [];
+    [this.id, this.id2, this.id3].forEach((id: string) => {
+      if (id) ids.push(id);
+    });
+
+    const valuesOnSheet: string[][] = this.sheet.getValuesOnSheet();
+    const lastRow: number = this.sheet.getLastRowIndex();
+
+    const idColumnIndexes = [5, 6, 7];
+    const memberKeyColumnIndex = 1;
+    let memberKeys = new Set<string>();
+    for (let idColumnIndex of idColumnIndexes) {
+      for (let row = 0; row < lastRow + 1; row++) {
+        if (ids.indexOf(valuesOnSheet[row][idColumnIndex]) != -1) {
+          let memberKey = valuesOnSheet[row][memberKeyColumnIndex];
+          memberKeys.add(memberKey);
+        }
+      }
+    }
+    return Array.from(memberKeys.values());
+  }
+
+  getAllGroupKeysUsingMemberKeys(memberKeys: string[]): string[] {
+    let groupKeys: string[] = [];
+    memberKeys.forEach((memberKey: string) => {
+      let member = new Member(memberKey);
+      groupKeys.push(...member.getGroupKeysBelongingTo());
+    });
+
+    return groupKeys;
   }
 }
