@@ -1,7 +1,7 @@
 import { SheetService } from '../sheet.service';
 import { Registration } from './registration';
 
-it('Array(5).fill(null).forEach((_, i) => {});' + '    });', () => {
+it('Array(5).fill(null).forEach((_, i) => {});', () => {
   let result = [];
   Array(5)
     .fill(null)
