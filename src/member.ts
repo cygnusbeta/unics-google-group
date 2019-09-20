@@ -57,7 +57,7 @@ export class Member {
       url,
       params,
       200,
-      `グループ (${group.groupKey}) での現在のメール送信権限の取得に失敗しました。`,
+      `グループ (${group.name}) での現在のメール送信権限の取得に失敗しました。`,
       {
         memberKey: this.memberKey,
         groupKey: group.groupKey
@@ -73,11 +73,11 @@ export class Member {
   }
 
   updateRoleIn(group: Group, newRole: 'MEMBER' | 'MANAGER'): void {
-    console.log(`グループ ${group.groupKey}`);
+    console.log(`グループ ${group.name}`);
     const nowRole: 'MEMBER' | 'MANAGER' = this.getRoleIn(group);
     if (newRole === nowRole) {
       console.info(
-        `グループ ${group.groupKey} は既に ${nowRole} になっているのでスキップしました。`
+        `グループ ${group.name} は既に ${nowRole} になっているのでスキップしました。`
       );
       return;
     }
@@ -122,11 +122,11 @@ export class Member {
 
       let msg = '';
       if (expected) {
-        msg = `メンバー ${this.memberKey} は、グループ ${group.groupKey} に属していません。属していないグループに対するそのメンバーの操作は「そのメンバーの追加」以外はできません。
+        msg = `メンバー ${this.memberKey} は、グループ ${group.name} に属していません。属していないグループに対するそのメンバーの操作は「そのメンバーの追加」以外はできません。
 
 ${logOtherVars}`;
       } else {
-        msg = `メンバー ${this.memberKey} は、グループ ${group.groupKey} に既に属しています。既に属しているグループにそのメンバーを新たに追加することはできません。
+        msg = `メンバー ${this.memberKey} は、グループ ${group.name} に既に属しています。既に属しているグループにそのメンバーを新たに追加することはできません。
 
 ${logOtherVars}`;
       }

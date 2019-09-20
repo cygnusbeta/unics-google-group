@@ -10,7 +10,7 @@ export const nameFromGroupKey = (groupKey: string): string => {
   } else if (campusAlphabet === 'hitachi') {
     campus = '日立';
   } else {
-    const errMsg = `groupKey が水戸のメールアドレスでも日立のものでもなく不正です。あるいは campusAlphabet の正規表現が間違っている可能性もあります。
+    const errMsg = `groupKey が水戸のメールアドレスでも日立のものでもなく不正です。
 ${logVar({ groupKey: this.groupKey })}`;
     throw new Error(errMsg);
   }
@@ -78,7 +78,7 @@ ${logVar({ campus })}`;
   create(otherVars4Log: object): void {
     if (this.created === true) {
       const logOtherVars: string = logVars(otherVars4Log);
-      const msg = `グループ ${this.groupKey} は既に作成されています。既に作成されているグループを新規作成することはできません。
+      const msg = `グループ ${this.name} は既に作成されています。既に作成されているグループを新規作成することはできません。
 
 ${logOtherVars}`;
       throw new Error(msg);
@@ -121,7 +121,8 @@ ${logOtherVars}`;
     if (!this.created && !this.isCreated()) {
       this.create(otherVars4Log);
       //       const logOtherVars: string = logVars(otherVars4Log);
-      //       const msg = `グループ ${this.groupKey} はまだ作成されていません。作成されていないグループのメンバー操作はできません。
+      //       const msg = `グループ ${this.name}
+      //       はまだ作成されていません。作成されていないグループのメンバー操作はできません。
       //
       // ${logOtherVars}`;
       //       throw new Error(msg);
