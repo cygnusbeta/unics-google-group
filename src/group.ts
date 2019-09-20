@@ -1,10 +1,11 @@
-import { getNowSchoolYear, sleep } from './util';
 import { logVar, logVars } from './logger';
 import { UrlFetchService } from './urlFetch.service';
+import { sleep } from './util';
 
 export class Group {
   public groupKey: string;
   public created: boolean;
+  public name: string;
 
   constructor() {}
 
@@ -17,10 +18,23 @@ export class Group {
     }
 
     this.groupKey = email;
+    const campusAlphabet = email.replace(/unics_[0-9]{4}_(.*)@googlegroups\.com/, '$1');
+    let campus: '水戸' | '日立';
+    if (campusAlphabet === 'mito') {
+      campus = '水戸';
+    } else if (campusAlphabet === 'hitachi') {
+      campus = '日立';
+    } else {
+      const errMsg = `groupKey が水戸のメールアドレスでも日立のものでもなく不正です。あるいは campusAlphabet の正規表現が間違っている可能性もあります。
+${logVar({ groupKey: this.groupKey })}`;
+      throw new Error(errMsg);
+    }
+    const schoolYear = email.replace(/unics_([0-9]{4})_.*@googlegroups\.com/, '$1');
+    this.name = `${schoolYear} ${campus}`;
     this.created = this.isCreated();
   }
 
-  initUsingCampus(campus: '水戸' | '日立', created: boolean = true): void {
+  initUsingCampus(schoolYear: number, campus: '水戸' | '日立', created: boolean = true): void {
     if (this.groupKey) {
       const errMsg = `この Group object は既に初期化されています。
 最初の初期化時 ${logVar({ groupKey: this.groupKey })}
@@ -30,11 +44,11 @@ export class Group {
 
     switch (campus) {
       case '水戸':
-        this.groupKey = `unics_${getNowSchoolYear()}_mito@googlegroups.com`;
+        this.groupKey = `unics_${schoolYear}_mito@googlegroups.com`;
         break;
 
       case '日立':
-        this.groupKey = `unics_${getNowSchoolYear()}_hitachi@googlegroups.com`;
+        this.groupKey = `unics_${schoolYear}_hitachi@googlegroups.com`;
         break;
 
       default:
@@ -44,6 +58,7 @@ ${logVar({ campus })}`;
         throw new Error(errMsg);
     }
 
+    this.name = `${schoolYear} ${campus}`;
     this.created = this.isCreated();
   }
 
@@ -56,7 +71,7 @@ ${logVar({ campus })}`;
     }
   }
 
-  create(name: string, otherVars4Log: object): void {
+  create(otherVars4Log: object): void {
     if (this.created === true) {
       const logOtherVars: string = logVars(otherVars4Log);
       const msg = `グループ ${this.groupKey} は既に作成されています。既に作成されているグループを新規作成することはできません。
@@ -69,8 +84,8 @@ ${logOtherVars}`;
     var url = 'https://www.googleapis.com/admin/directory/v1/groups';
     var data = {
       email: this.groupKey,
-      name: name,
-      description: `UNICS ${name}`
+      name: this.name,
+      description: `UNICS ${this.name}`
     };
     var params = {
       method: 'post',
@@ -83,7 +98,7 @@ ${logOtherVars}`;
       url,
       params,
       201,
-      `新しいメーリングリスト ${name} の作成に失敗しました。`,
+      `新しいメーリングリスト ${this.name} の作成に失敗しました。`,
       {
         groupKey: this.groupKey
       }
@@ -100,11 +115,12 @@ ${logOtherVars}`;
     // true のときは this.isCreated を参照しない。（this.created ===
     // false のときは念の為もう一度確認する。依然として false が帰ってきたらエラーを吐く。）
     if (!this.created && !this.isCreated()) {
-      const logOtherVars: string = logVars(otherVars4Log);
-      const msg = `グループ ${this.groupKey} はまだ作成されていません。作成されていないグループのメンバー操作はできません。
-
-${logOtherVars}`;
-      throw new Error(msg);
+      this.create(otherVars4Log);
+      //       const logOtherVars: string = logVars(otherVars4Log);
+      //       const msg = `グループ ${this.groupKey} はまだ作成されていません。作成されていないグループのメンバー操作はできません。
+      //
+      // ${logOtherVars}`;
+      //       throw new Error(msg);
     }
   }
 }

@@ -18,7 +18,7 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   try {
     let member = new Member(o.email);
     let group = new Group();
-    group.initUsingCampus(o.campus);
+    group.initUsingCampus(getNowSchoolYear(), o.campus);
     member.addTo(group);
     bodyArray.push('メーリングリスト（Google グループ）へ追加しました。');
   } catch (e) {
