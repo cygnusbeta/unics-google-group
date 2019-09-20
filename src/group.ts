@@ -2,6 +2,22 @@ import { logVar, logVars } from './logger';
 import { UrlFetchService } from './urlFetch.service';
 import { sleep } from './util';
 
+export const nameFromGroupKey = (groupKey: string): string => {
+  const campusAlphabet = groupKey.replace(/unics_[0-9]{4}_(.*)@googlegroups\.com/, '$1');
+  let campus: '水戸' | '日立';
+  if (campusAlphabet === 'mito') {
+    campus = '水戸';
+  } else if (campusAlphabet === 'hitachi') {
+    campus = '日立';
+  } else {
+    const errMsg = `groupKey が水戸のメールアドレスでも日立のものでもなく不正です。あるいは campusAlphabet の正規表現が間違っている可能性もあります。
+${logVar({ groupKey: this.groupKey })}`;
+    throw new Error(errMsg);
+  }
+  const schoolYear = groupKey.replace(/unics_([0-9]{4})_.*@googlegroups\.com/, '$1');
+  return `${schoolYear} ${campus}`;
+};
+
 export class Group {
   public groupKey: string;
   public created: boolean;
@@ -18,19 +34,7 @@ export class Group {
     }
 
     this.groupKey = email;
-    const campusAlphabet = email.replace(/unics_[0-9]{4}_(.*)@googlegroups\.com/, '$1');
-    let campus: '水戸' | '日立';
-    if (campusAlphabet === 'mito') {
-      campus = '水戸';
-    } else if (campusAlphabet === 'hitachi') {
-      campus = '日立';
-    } else {
-      const errMsg = `groupKey が水戸のメールアドレスでも日立のものでもなく不正です。あるいは campusAlphabet の正規表現が間違っている可能性もあります。
-${logVar({ groupKey: this.groupKey })}`;
-      throw new Error(errMsg);
-    }
-    const schoolYear = email.replace(/unics_([0-9]{4})_.*@googlegroups\.com/, '$1');
-    this.name = `${schoolYear} ${campus}`;
+    this.name = nameFromGroupKey(this.groupKey);
     this.created = this.isCreated();
   }
 
@@ -81,13 +85,13 @@ ${logOtherVars}`;
     }
 
     //  POST group information to https://www.googleapis.com/admin/directory/v1/groups
-    var url = 'https://www.googleapis.com/admin/directory/v1/groups';
-    var data = {
+    const url = 'https://www.googleapis.com/admin/directory/v1/groups';
+    const data = {
       email: this.groupKey,
       name: this.name,
       description: `UNICS ${this.name}`
     };
-    var params = {
+    const params = {
       method: 'post',
       contentType: 'application/json',
       // Convert the JavaScript object to a JSON string.
