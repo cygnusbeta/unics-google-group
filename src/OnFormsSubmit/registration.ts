@@ -6,6 +6,7 @@ import secret from '../secret';
 import { logVar } from '../logger';
 import { SpreadSheetService } from '../spreadSheet.service';
 import { SheetService } from '../sheet.service';
+import { getAllMemberKeysUsingIds, updateGroupsRoleSince2019 } from './common';
 
 export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   const o = new Registration(e);
@@ -13,7 +14,11 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   let group = new Group();
   group.initUsingCampus(o.campus);
   member.addTo(group);
-  o.updateGroupsRoleSince2019();
+
+  const idsOnForm: string[] = [this.id, this.id2, this.id3];
+  const memberKeys: string[] = getAllMemberKeysUsingIds(idsOnForm, this.sheet);
+  const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
+  updateGroupsRoleSince2019(memberKeys, newRole);
 
   o.add2SS();
   o.add2Contacts();
@@ -53,11 +58,6 @@ export class Registration {
       this.campus = e.namedValues['所属キャンパス'][0] as '水戸' | '日立';
       this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
     }
-  }
-
-  updateGroupsRoleSince2019(): void {
-    // 2019 年度からの全てのメーリングリストの送信権限を更新する。
-    // 学籍番号が属しているメーリングリスト一覧を取得 → それ全てに対して権限を更新
   }
 
   add2SS(): void {
@@ -107,52 +107,5 @@ ${secret.discordLink}
     const htmlBody = body.replace(/\n/g, '<br />');
     const from = `UNICS <${secret.unicsEmail}>`;
     GmailApp.sendEmail(this.email, sub, body, { htmlBody: htmlBody, from: from });
-  }
-
-  getAllMemberKeysUsingIds(ids4Test: string[] = undefined): string[] {
-    if ((ids4Test && !this.test) || (!ids4Test && this.test)) {
-      throw new Error(
-        'this.test と ids4Test でテストなのかテストじゃないのかが食い違っています。どちらかに統一してください。'
-      );
-    }
-    if (ids4Test.length !== 3) {
-      throw new Error('ids4test.length === 3 が予期されています。');
-    }
-    if (ids4Test) {
-      this.id = ids4Test[0];
-      this.id2 = ids4Test[1];
-      this.id3 = ids4Test[2];
-    }
-
-    let ids: string[] = [];
-    [this.id, this.id2, this.id3].forEach((id: string) => {
-      if (id) ids.push(id);
-    });
-
-    const valuesOnSheet: string[][] = this.sheet.getValuesOnSheet();
-    const lastRow: number = this.sheet.getLastRowIndex();
-
-    const idColumnIndexes = [5, 6, 7];
-    const memberKeyColumnIndex = 1;
-    let memberKeys = new Set<string>();
-    for (let idColumnIndex of idColumnIndexes) {
-      for (let row = 0; row < lastRow + 1; row++) {
-        if (ids.indexOf(valuesOnSheet[row][idColumnIndex]) != -1) {
-          let memberKey = valuesOnSheet[row][memberKeyColumnIndex];
-          memberKeys.add(memberKey);
-        }
-      }
-    }
-    return Array.from(memberKeys.values());
-  }
-
-  getAllGroupKeysUsingMemberKeys(memberKeys: string[]): string[] {
-    let groupKeys: string[] = [];
-    memberKeys.forEach((memberKey: string) => {
-      let member = new Member(memberKey);
-      groupKeys.push(...member.getGroupKeysBelongingTo());
-    });
-
-    return groupKeys;
   }
 }
