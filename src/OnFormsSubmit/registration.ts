@@ -1,29 +1,52 @@
 import FormsOnSubmit = GoogleAppsScript.Events.FormsOnSubmit;
 import { Member } from '../member';
 import { Group } from '../group';
-import { getNowSchoolYear } from '../util';
+import { getFormattedDate, getNowSchoolYear } from '../util';
 import secret from '../secret';
 import { logVar } from '../logger';
 import { SpreadSheetService } from '../spreadSheet.service';
 import { SheetService } from '../sheet.service';
 import { getAllMemberKeysUsingIds, updateGroupsRoleSince2019 } from './common';
+import { Email } from '../email';
 
 export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
+  let bodyArray: string[] = ['────　スクリプトログ　─────'];
+  let isErr: boolean = false;
+  let errBodyArray = [];
+
   let ss: SpreadSheetService = new SpreadSheetService();
   let o = new Registration(e, ss);
-  let member = new Member(o.email);
-  let group = new Group();
-  group.initUsingCampus(o.campus);
-  member.addTo(group);
+  try {
+    let member = new Member(o.email);
+    let group = new Group();
+    group.initUsingCampus(o.campus);
+    member.addTo(group);
+    bodyArray.push('メーリングリスト（Google グループ）へ追加しました。');
+  } catch (e) {
+    isErr = true;
+    const body = 'エラー：メーリングリスト（Google グループ）への追加に失敗しました。';
+    bodyArray.push(body);
+    const errBody = `エラー：メーリングリスト（Google グループ）への追加に失敗しました。
+getFormattedDate(): ${getFormattedDate()}
+e.name: ${e.name}
+e.lineNumber: ${e.lineNumber}
+e.message: ${e.message}`;
+    errBodyArray.push(errBody);
+  }
 
-  const idsOnForm: string[] = [this.id, this.id2, this.id3];
-  const memberKeys: string[] = getAllMemberKeysUsingIds(idsOnForm, this.sheet);
-  const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
-  updateGroupsRoleSince2019(memberKeys, newRole);
+  try {
+    const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
+    if (newRole === 'MANAGER') {
+      // '希望する' にチェックをつけた人のみ、その人が入っている過去のメーリングリストに遡ってメール送信権限をつけにいく
+      const idsOnForm: string[] = [this.id, this.id2, this.id3];
+      const memberKeys: string[] = getAllMemberKeysUsingIds(idsOnForm, this.sheet);
+      updateGroupsRoleSince2019(memberKeys, newRole);
+    }
+  } catch (e) {}
 
   o.add2SheetSeparate(ss);
   o.add2Contacts();
-  o.sendDiscordInvitation();
+  o.sendEmail(bodyArray, isErr, errBodyArray);
 };
 
 export class Registration {
@@ -83,15 +106,12 @@ export class Registration {
     contact.addToGroup(group);
   }
 
-  sendDiscordInvitation(): void {
-    const name = this.name;
-    logVar({ name });
-    const email = this.email;
-    logVar({ email });
-    if (this.name == '' || this.email == '') return;
-
+  sendEmail(bodyArray: string[], isErr: boolean, errBodyArray: string[] = undefined): void {
+    const to = this.email;
     const sub = '【UNICS】【自動送信】ご入会・所属継続ありがとうございます';
-    let body = `${this.name} さん
+
+    //　下のメッセージは bodyArray の先頭に追加
+    bodyArray.unshift(`${this.name} さん
 
 UNICS へのご入会・所属継続、ありがとうございます。
 このメールは ${getNowSchoolYear()}年度 PC サークル UNICS 入会・所属継続用フォーム ≪Google グループ対応版≫ へ回答された方に自動で送信されています。
@@ -111,11 +131,13 @@ ${secret.discordLink}
 （ちなみに B1 というのは学部一年という意味です。）
 
 何か質問等ある場合には UNICS へ HP、Twitter、または、Discord よりお問い合わせ下さい。
-よろしくお願いします。`;
-
-    body = body.trim();
-    const htmlBody = body.replace(/\n/g, '<br />');
-    const from = `UNICS <${secret.unicsEmail}>`;
-    GmailApp.sendEmail(this.email, sub, body, { htmlBody: htmlBody, from: from });
+よろしくお願いします。`);
+    if (isErr) {
+      const email = new Email(to, sub, bodyArray, isErr, errBodyArray);
+      email.send();
+    } else {
+      const email = new Email(to, sub, bodyArray);
+      email.send();
+    }
   }
 }
