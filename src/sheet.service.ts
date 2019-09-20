@@ -5,6 +5,7 @@ export class SheetService {
   private sheet: Sheet;
   private valuesOnSheet: string[][];
   private test: boolean;
+  private lastRow: number;
 
   constructor(sheet: Sheet, valuesOnSheet4Test: any[][] = undefined) {
     this.sheet = sheet;
@@ -22,19 +23,26 @@ export class SheetService {
   }
 
   getLastRowIndex(): number {
-    if (!this.valuesOnSheet) {
-      this.valuesOnSheet = this.sheet.getDataRange().getValues();
-    }
-
-    let lastRow = 0;
-    for (let j = 0; j < this.valuesOnSheet.length; j++) {
-      if (this.valuesOnSheet[j][0] !== '') {
-        lastRow = Math.max(lastRow, j);
-      } else {
-        break;
+    if (!this.lastRow) {
+      if (!this.valuesOnSheet) {
+        this.valuesOnSheet = this.sheet.getDataRange().getValues();
       }
+
+      let lastRow = 0;
+      for (let j = 0; j < this.valuesOnSheet.length; j++) {
+        if (this.valuesOnSheet[j][0] !== '') {
+          lastRow = Math.max(lastRow, j);
+        } else {
+          break;
+        }
+      }
+      logVar({ lastRow });
+      this.lastRow = lastRow;
     }
-    logVar({ lastRow });
-    return lastRow;
+    return this.lastRow;
+  }
+
+  getRange(row: number, column: number, numRows: number, numColumns: number) {
+    return this.sheet.getRange(row, column, numRows, numColumns);
   }
 }

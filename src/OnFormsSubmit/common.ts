@@ -11,9 +11,9 @@ export const format = (str: string): string => {
 };
 
 global.onFormSubmit = (e: FormsOnSubmit): void => {
-  let form: string = e.namedValues['確認'][0];
-  form = format(form);
-  switch (form) {
+  let formType: string = e.namedValues['確認'][0];
+  formType = format(formType);
+  switch (formType) {
     case '登録':
       onRegistrationFormSubmit(e);
       break;

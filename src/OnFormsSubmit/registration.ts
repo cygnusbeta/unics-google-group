@@ -9,7 +9,8 @@ import { SheetService } from '../sheet.service';
 import { getAllMemberKeysUsingIds, updateGroupsRoleSince2019 } from './common';
 
 export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
-  const o = new Registration(e);
+  let ss: SpreadSheetService = new SpreadSheetService();
+  let o = new Registration(e, ss);
   let member = new Member(o.email);
   let group = new Group();
   group.initUsingCampus(o.campus);
@@ -20,31 +21,28 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
   updateGroupsRoleSince2019(memberKeys, newRole);
 
-  o.add2SS();
+  o.add2SS(ss);
   o.add2Contacts();
   o.sendDiscordInvitation();
 };
 
 export class Registration {
   public email: string;
-  public name: string;
-  public phonetic: string;
-  public year: string;
+  private name: string;
+  private phonetic: string;
+  private year: string;
   public id: string;
   public id2: string;
   public id3: string;
-  public department: string;
+  private department: string;
   public campus: '水戸' | '日立';
   public permission: '希望する' | '';
+  private formType: string;
   private sheet: SheetService;
   private test: boolean;
 
-  constructor(
-    e: FormsOnSubmit,
-    sheet: SheetService = new SpreadSheetService().getSheet('registration'),
-    test: boolean = false
-  ) {
-    this.sheet = sheet;
+  constructor(e: FormsOnSubmit, ss: SpreadSheetService, test: boolean = false) {
+    this.sheet = ss.getSheet('registration');
     this.test = test;
     if (!this.test) {
       this.email = e.namedValues['メールアドレス'][0];
@@ -57,11 +55,46 @@ export class Registration {
       this.department = e.namedValues['学部学科課程'][0];
       this.campus = e.namedValues['所属キャンパス'][0] as '水戸' | '日立';
       this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
+      this.formType = e.namedValues['確認'][0];
     }
   }
 
-  add2SS(): void {
-    //　フォームへの回答を同じスプレッドシートの水戸と日立のタブに振り分ける
+  add2SS(ss: SpreadSheetService): void {
+    //　フォームへの回答を同じスプレッドシートの水戸と日立のタブ（シート）に振り分ける
+    const values: string[][] = [
+      [
+        this.email,
+        this.name,
+        this.phonetic,
+        this.year,
+        this.id,
+        this.id2,
+        this.id3,
+        this.department,
+        this.campus as string,
+        this.permission as string,
+        this.formType
+      ]
+    ];
+    const sheetName = `${getNowSchoolYear()} ${this.campus}`;
+    const row0Values: string[][] = [
+      [
+        'メールアドレス',
+        '氏名',
+        '氏名のふりがな',
+        '学年',
+        '学籍番号',
+        '前の学籍番号',
+        '前々の学籍番号',
+        '学部学科課程',
+        '所属キャンパス',
+        'メール送信権限',
+        '確認'
+      ]
+    ];
+    let sheetSeparate: SheetService = ss.getSheet(sheetName, true, row0Values);
+    const lastRow = sheetSeparate.getLastRowIndex();
+    this.sheet.getRange(lastRow + 1, 1, 1, values[0].length).setValues(values);
   }
 
   add2Contacts(): void {
