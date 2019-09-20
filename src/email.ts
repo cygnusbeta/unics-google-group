@@ -23,17 +23,22 @@ export class Email {
     errBodyArray: string[] = undefined
   ) {
     this.isErr = isErr;
-    if (this.isErr) {
-      if (!errBodyArray) {
-        const log4Vars = logVars({ to, sub, bodyArray, isErr });
-        throw new Error(`isErr === true なのに errBodyArray が与えられていません
+    if (this.isErr && !errBodyArray) {
+      const log4Vars = logVars({ to, sub, bodyArray, isErr });
+      throw new Error(`isErr === true なのに errBodyArray が与えられていません
 
 ${log4Vars}`);
-      }
+    }
 
+    if (this.isErr) {
       bodyArray.push(
         '上記の一部処理でスクリプトに内部エラーが発生しています。この問題はスクリプトのメンテナーに自動で報告されました。現時点で何か対応する必要はありません。メンテナーが追って対応しますのでお待ちください。ご迷惑をおかけして申し訳ありません。'
       );
+    } else {
+      bodyArray.push('スクリプトは正常に終了しました。');
+    }
+
+    if (this.isErr) {
       errBodyArray.push('────　フォーム回答者に送信されたメール　─────');
       errBodyArray.push(...bodyArray);
 

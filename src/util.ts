@@ -8,7 +8,7 @@ export const sleep = (second: number): void => {
   Utilities.sleep(second * 1000);
 };
 
-export const getFormattedDate = function(date = new Date()): string {
+export const getFormattedDate = (date = new Date()): string => {
   let obj: object = {
     MM: String(date.getMonth() + 1),
     dd: String(date.getDate()),
@@ -31,4 +31,11 @@ export const getFormattedDate = function(date = new Date()): string {
   const yyyy = date.getFullYear();
 
   return `${yyyy}/${obj['MM']}/${obj['dd']}[${EEE}] ${obj['hh']}:${obj['mm']}:${obj['ss']}`;
+};
+
+export const formatError = (e: { name: string; lineNumber: number; message: string }): string => {
+  return `getFormattedDate(): ${getFormattedDate()}
+e.name: ${e.name}
+e.lineNumber: ${e.lineNumber}
+e.message: ${e.message}`;
 };

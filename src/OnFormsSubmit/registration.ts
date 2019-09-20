@@ -1,9 +1,8 @@
 import FormsOnSubmit = GoogleAppsScript.Events.FormsOnSubmit;
 import { Member } from '../member';
 import { Group } from '../group';
-import { getFormattedDate, getNowSchoolYear } from '../util';
+import { formatError, getNowSchoolYear } from '../util';
 import secret from '../secret';
-import { logVar } from '../logger';
 import { SpreadSheetService } from '../spreadSheet.service';
 import { SheetService } from '../sheet.service';
 import { getAllMemberKeysUsingIds, updateGroupsRoleSince2019 } from './common';
@@ -26,26 +25,46 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
     isErr = true;
     const body = 'エラー：メーリングリスト（Google グループ）への追加に失敗しました。';
     bodyArray.push(body);
-    const errBody = `エラー：メーリングリスト（Google グループ）への追加に失敗しました。
-getFormattedDate(): ${getFormattedDate()}
-e.name: ${e.name}
-e.lineNumber: ${e.lineNumber}
-e.message: ${e.message}`;
-    errBodyArray.push(errBody);
+    errBodyArray.push(`エラー：メーリングリスト（Google グループ）への追加に失敗しました。
+${formatError(e)}`);
   }
 
-  try {
-    const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
-    if (newRole === 'MANAGER') {
-      // '希望する' にチェックをつけた人のみ、その人が入っている過去のメーリングリストに遡ってメール送信権限をつけにいく
+  const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
+  if (newRole === 'MANAGER') {
+    // '希望する' にチェックをつけた人のみ、その人が入っている過去のメーリングリストに遡ってメール送信権限をつけにいく
+    try {
       const idsOnForm: string[] = [this.id, this.id2, this.id3];
       const memberKeys: string[] = getAllMemberKeysUsingIds(idsOnForm, this.sheet);
       updateGroupsRoleSince2019(memberKeys, newRole);
+      bodyArray.push('メール送信権限を設定しました。');
+    } catch (e) {
+      isErr = true;
+      bodyArray.push('エラー：メール送信権限の設定に失敗しました。');
+      errBodyArray.push(`エラー：メール送信権限の設定に失敗しました。
+${formatError(e)}`);
     }
-  } catch (e) {}
+  }
 
-  o.add2SheetSeparate(ss);
-  o.add2Contacts();
+  try {
+    o.add2SheetSeparate(ss);
+    bodyArray.push('回答をスプレッドシートへ追加しました。');
+  } catch (e) {
+    isErr = true;
+    bodyArray.push('エラー：回答のスプレッドシートへの追加に失敗しました。');
+    errBodyArray.push(`エラー：回答のスプレッドシートへの追加に失敗しました。
+${formatError(e)}`);
+  }
+
+  try {
+    o.add2Contacts();
+    bodyArray.push('回答されたメールアドレスを Google Contacts へ追加しました。');
+  } catch (e) {
+    isErr = true;
+    bodyArray.push('エラー：回答のメールアドレスの Google Contacts への追加に失敗しました。');
+    errBodyArray.push(`エラー：回答のメールアドレスの Google Contacts への追加に失敗しました。
+${formatError(e)}`);
+  }
+
   o.sendEmail(bodyArray, isErr, errBodyArray);
 };
 
