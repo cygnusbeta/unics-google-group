@@ -1,6 +1,6 @@
 import Spreadsheet = GoogleAppsScript.Spreadsheet.Spreadsheet;
 import { SheetService } from './sheet.service';
-import { logVar, logVarL, logVars } from './logger';
+import { logVars } from './logger';
 
 export class SpreadSheetService {
   private ss: Spreadsheet;
@@ -16,7 +16,7 @@ export class SpreadSheetService {
   ): SheetService {
     const otherVars4Log = { sheetName, allowCreateNew };
     const logs = logVars(otherVars4Log);
-    if (allowCreateNew && !row0Values || !allowCreateNew && row0Values) {
+    if ((allowCreateNew && !row0Values) || (!allowCreateNew && row0Values)) {
       const errMsg = `allowCreateNew と row0Values は同時に指定してください。
 
 ${logs}`;
@@ -26,6 +26,7 @@ ${logs}`;
       const errMsg = `row0Values の numRows は 1 でなければなりません。
 
 ${logs}`;
+      throw new Error(errMsg);
     }
 
     let sheet: GoogleAppsScript.Spreadsheet.Sheet = this.ss.getSheetByName(sheetName);
@@ -37,7 +38,7 @@ ${logs}`;
         throw new Error(errMsg);
       }
       sheet = this.ss.insertSheet(sheetName);
-      sheet.getRange(0, 1, 1, row0Values[0].length).setValues(row0Values);
+      sheet.getRange(0, 0, 1, row0Values[0].length).setValues(row0Values);
     }
     return new SheetService(sheet);
   }

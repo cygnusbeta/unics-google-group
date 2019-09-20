@@ -21,7 +21,7 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
   updateGroupsRoleSince2019(memberKeys, newRole);
 
-  o.add2SS(ss);
+  o.add2SheetSeparate(ss);
   o.add2Contacts();
   o.sendDiscordInvitation();
 };
@@ -38,6 +38,7 @@ export class Registration {
   public campus: '水戸' | '日立';
   public permission: '希望する' | '';
   private formType: string;
+
   private sheet: SheetService;
   private test: boolean;
 
@@ -59,42 +60,18 @@ export class Registration {
     }
   }
 
-  add2SS(ss: SpreadSheetService): void {
+  add2SheetSeparate(ss: SpreadSheetService): void {
     //　フォームへの回答を同じスプレッドシートの水戸と日立のタブ（シート）に振り分ける
     const values: string[][] = [
-      [
-        this.email,
-        this.name,
-        this.phonetic,
-        this.year,
-        this.id,
-        this.id2,
-        this.id3,
-        this.department,
-        this.campus as string,
-        this.permission as string,
-        this.formType
-      ]
+      [this.name, this.phonetic, this.year, this.id, this.department, this.campus as string]
     ];
     const sheetName = `${getNowSchoolYear()} ${this.campus}`;
     const row0Values: string[][] = [
-      [
-        'メールアドレス',
-        '氏名',
-        '氏名のふりがな',
-        '学年',
-        '学籍番号',
-        '前の学籍番号',
-        '前々の学籍番号',
-        '学部学科課程',
-        '所属キャンパス',
-        'メール送信権限',
-        '確認'
-      ]
+      ['氏名', '氏名のふりがな', '学年', '学籍番号', '学部学科課程', '所属キャンパス']
     ];
     let sheetSeparate: SheetService = ss.getSheet(sheetName, true, row0Values);
     const lastRow = sheetSeparate.getLastRowIndex();
-    this.sheet.getRange(lastRow + 1, 1, 1, values[0].length).setValues(values);
+    this.sheet.getRange(lastRow + 1, 0, 1, values[0].length).setValues(values);
   }
 
   add2Contacts(): void {
