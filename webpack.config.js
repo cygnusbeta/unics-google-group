@@ -4,7 +4,7 @@ const GasPlugin = require("gas-webpack-plugin");
 module.exports = {
   mode: 'development',
   entry: [
-    './src/OnFormsSubmit/registration.ts'
+    './src/OnFormsSubmit/common.ts'
   ],
   devtool: false,
   output: {

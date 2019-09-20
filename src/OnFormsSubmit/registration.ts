@@ -7,9 +7,7 @@ import { logVar } from '../logger';
 import { SpreadSheetService } from '../spreadSheet.service';
 import { SheetService } from '../sheet.service';
 
-declare var global: any;
-
-global.onRegistrationFormSubmit = (e: FormsOnSubmit) => {
+export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   const o = new Registration(e);
   let member = new Member(o.email);
   let group = new Group();
