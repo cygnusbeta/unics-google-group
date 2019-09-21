@@ -117,8 +117,6 @@ export class Registration {
   }
 
   add2Contacts(): void {
-    if (this.name == '' || this.email == '') return;
-
     let contact = ContactsApp.createContact('', this.name, this.email);
     let group = ContactsApp.getContactGroup(`${getNowSchoolYear()} ${this.campus}`);
     Logger.log(group);

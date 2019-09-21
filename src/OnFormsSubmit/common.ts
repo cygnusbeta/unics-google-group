@@ -3,6 +3,8 @@ import { onRegistrationFormSubmit } from './registration';
 import { Member } from '../member';
 import { Group } from '../group';
 import { SheetService } from '../sheet.service';
+import { onChangeEmailFormSubmit } from './changeEmail';
+import { logVar } from '../logger';
 
 declare var global: any;
 
@@ -17,6 +19,14 @@ global.onFormSubmit = (e: FormsOnSubmit): void => {
     case '登録':
       onRegistrationFormSubmit(e);
       break;
+    case 'メールアドレスを変更':
+      onChangeEmailFormSubmit(e);
+      break;
+    default:
+      const errMsg = `該当のフォームがありません
+
+${logVar({ formType })}`;
+      throw new Error(errMsg);
   }
 };
 
