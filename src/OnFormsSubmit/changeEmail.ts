@@ -12,7 +12,6 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
   let bodyArray: string[] = ['────　スクリプトログ　─────'];
   let isErr: boolean = false;
   let errBodyArray = [];
-  let oldMemberKeys: string[] = [];
 
   let ss: SpreadSheetService = new SpreadSheetService();
   let o = new ChangeEmail(e, ss);
@@ -21,8 +20,8 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
     let newMember = new Member(newMemberKey);
 
     const idsOnForm: string[] = [this.id, this.id2, this.id3];
-    oldMemberKeys.push(...getAllMemberKeysUsingIds(idsOnForm, this.sheet));
-    if (oldMemberKeys.length === 0) {
+    o.oldMemberKeys.push(...getAllMemberKeysUsingIds(idsOnForm, this.sheet));
+    if (o.oldMemberKeys.length === 0) {
       let ids: string[] = [];
       idsOnForm.forEach((id: string) => {
         if (id) ids.push(id);
@@ -40,7 +39,7 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
 ${logVar({ id: this.id, id2: this.id2, id3: this.id3 })}`;
       throw new Error(errMsg);
     }
-    for (let oldMemberKey of oldMemberKeys) {
+    for (let oldMemberKey of o.oldMemberKeys) {
       let oldMember = new Member(oldMemberKey);
       const groupKeys: string[] = oldMember.getGroupKeysBelongingTo();
       for (let groupKey of groupKeys) {
@@ -100,15 +99,17 @@ export class ChangeEmail {
   public id: string;
   public id2: string;
   public id3: string;
-  public campus: '水戸' | '日立';
   private formType: string;
 
   private sheet: SheetService;
   private test: boolean;
+  public oldMemberKeys: string[];
 
   constructor(e: FormsOnSubmit, ss: SpreadSheetService, test: boolean = false) {
     this.sheet = ss.getSheet('registration');
     this.test = test;
+    this.oldMemberKeys = [];
+
     if (!this.test) {
       this.newEmail = e.namedValues['新しいメールアドレス'][0];
       this.name = e.namedValues['氏名'][0];
@@ -116,7 +117,6 @@ export class ChangeEmail {
       this.id = e.namedValues['学籍番号'][0];
       this.id2 = e.namedValues['前の学籍番号'][0];
       this.id3 = e.namedValues['前々の学籍番号'][0];
-      this.campus = e.namedValues['所属キャンパス'][0] as '水戸' | '日立';
       this.formType = e.namedValues['確認'][0];
     }
   }
@@ -126,28 +126,29 @@ export class ChangeEmail {
   changeOnSS(): void {}
 
   sendEmail(bodyArray: string[], isErr: boolean, errBodyArray: string[]): void {
-    const to = this.newEmail;
+    const tos = [this.newEmail, ...this.oldMemberKeys];
+    tos.forEach((to: string) => {
+      if (isErr) {
+        const sub = '【UNICS】【自動送信】メールアドレスの変更（失敗）';
 
-    if (isErr) {
-      const sub = '【UNICS】【自動送信】メールアドレスの変更（失敗）';
-
-      //　下のメッセージは bodyArray の先頭に追加
-      bodyArray.unshift(`${this.name} さん
+        //　下のメッセージは bodyArray の先頭に追加
+        bodyArray.unshift(`${this.name} さん
   
   メールアドレスの変更処理が何らかのエラー発生により正常に処理されませんでした。`);
 
-      const email = new Email(to, sub, bodyArray, isErr, errBodyArray);
-      email.send();
-    } else {
-      const sub = '【UNICS】【自動送信】メールアドレスの変更処理完了';
+        const email = new Email(to, sub, bodyArray, isErr, errBodyArray);
+        email.send();
+      } else {
+        const sub = '【UNICS】【自動送信】メールアドレスの変更処理完了';
 
-      //　下のメッセージは bodyArray の先頭に追加
-      bodyArray.unshift(`${this.name} さん
+        //　下のメッセージは bodyArray の先頭に追加
+        bodyArray.unshift(`${this.name} さん
   
   メールアドレスを変更しました。`);
 
-      const email = new Email(to, sub, bodyArray);
-      email.send();
-    }
+        const email = new Email(to, sub, bodyArray);
+        email.send();
+      }
+    });
   }
 }
