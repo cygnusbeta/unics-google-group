@@ -50,8 +50,9 @@ ${logVar({ id: this.id, id2: this.id2, id3: this.id3 })}`;
       for (let groupKey of groupKeys) {
         let group = new Group();
         group.initUsingEmail(groupKey);
+        let nowRole = oldMember.getRoleIn(group);
         oldMember.deleteFrom(group);
-        newMember.addTo(group);
+        newMember.addTo(group, nowRole);
         // - Google Group [2019 水戸] (unics_20xx_mito@googlegroups.com):
         //
         //   old@example.com -> new@example.com

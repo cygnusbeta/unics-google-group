@@ -14,13 +14,15 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   let isErr: boolean = false;
   let errBodyArray = [];
 
+  const role: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
+
   let ss: SpreadSheetService = new SpreadSheetService();
   let o = new Registration(e, ss);
   try {
     let member = new Member(o.email);
     let group = new Group();
     group.initUsingCampus(getNowSchoolYear(), o.campus);
-    member.addTo(group);
+    member.addTo(group, role);
     bodyArray.push('メーリングリスト（Google グループ）へ追加しました。');
   } catch (e) {
     isErr = true;
@@ -30,19 +32,18 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
 ${formatError(e)}`);
   }
 
-  const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
-  if (newRole === 'MANAGER') {
+  if (role === 'MANAGER') {
     // '希望する' にチェックをつけた人のみ、その人が入っている過去のメーリングリストに遡ってメール送信権限をつけにいく
     const idsOnForm: string[] = [this.id, this.id2, this.id3];
     let ids = new IdsService(idsOnForm, this.sheet);
     try {
       const memberKeys: string[] = ids.getAllMemberKeys();
 
-      bodyArray.push('メール送信権限の変更処理');
-      let logArray4BodyArray = updateGroupsRoleSince2019(memberKeys, newRole);
+      bodyArray.push('昨年度以前のメール送信権限の変更処理');
+      let logArray4BodyArray = updateGroupsRoleSince2019(memberKeys, role);
       if (logArray4BodyArray.length === 0) {
         bodyArray.push(
-          '参加されているメーリングリストのグループのメール送信権限は既に回答された通りになっています。変更対象のグループはありませんでした。'
+          '昨年度以前の参加されているメーリングリストのグループは存在しないか、既にメール送信権限が今回回答された通りになっています。変更対象のグループはありませんでした。'
         );
       } else {
         bodyArray.push(...logArray4BodyArray);

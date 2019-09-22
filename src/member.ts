@@ -9,14 +9,14 @@ export class Member {
     this.memberKey = email;
   }
 
-  addTo(group: Group): void {
+  addTo(group: Group, role: 'MEMBER' | 'MANAGER'): void {
     this.confirmBelongToOrNotTo(group, false);
 
     //  POST a member information to https://www.googleapis.com/admin/directory/v1/groups/<groupKey>/members
     const url = `https://www.googleapis.com/admin/directory/v1/groups/${group.groupKey}/members`;
     const data = {
       email: this.memberKey,
-      role: 'MEMBER'
+      role: role
     };
     const params = {
       method: 'post',
