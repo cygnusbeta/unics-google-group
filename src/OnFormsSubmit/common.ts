@@ -5,6 +5,7 @@ import { Group } from '../group';
 import { onChangeEmailFormSubmit } from './changeEmail';
 import { logVar } from '../logger';
 import { onChangePermissionFormSubmit } from './changePermission';
+import { onGetGroupsFormSubmit } from './getGroups';
 
 declare var global: any;
 
@@ -24,6 +25,9 @@ global.onFormSubmit = (e: FormsOnSubmit): void => {
       break;
     case 'メール送信権限を変更':
       onChangePermissionFormSubmit(e);
+      break;
+    case '参加済メーリングリスト一覧を取得':
+      onGetGroupsFormSubmit(e);
       break;
     default:
       const errMsg = `該当のフォームがありません
