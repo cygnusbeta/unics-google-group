@@ -7,7 +7,7 @@ import { SpreadSheetService } from '../spreadSheet.service';
 import { SheetService } from '../sheet.service';
 import { updateGroupsRoleSince2019 } from './common';
 import { Email } from '../email';
-import { Ids } from '../ids';
+import { IdsService } from '../ids.service';
 
 export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   let bodyArray: string[] = ['────　スクリプトログ　─────'];
@@ -35,7 +35,7 @@ ${formatError(e)}`);
     // '希望する' にチェックをつけた人のみ、その人が入っている過去のメーリングリストに遡ってメール送信権限をつけにいく
     try {
       const idsOnForm: string[] = [this.id, this.id2, this.id3];
-      let ids = new Ids(idsOnForm, this.sheet);
+      let ids = new IdsService(idsOnForm, this.sheet);
       const memberKeys: string[] = ids.getAllMemberKeys();
       updateGroupsRoleSince2019(memberKeys, newRole);
       bodyArray.push('メール送信権限を設定しました。');

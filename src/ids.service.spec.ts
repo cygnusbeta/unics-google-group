@@ -1,5 +1,5 @@
 import { SheetService } from './sheet.service';
-import { Ids } from './ids';
+import { IdsService } from './ids.service';
 
 it('getAllMemberKeysUsingIds(idsOnForm, sheet)', () => {
   // valuesOnSheet は実際の値を見ずに適当に書きました
@@ -44,7 +44,7 @@ it('getAllMemberKeysUsingIds(idsOnForm, sheet)', () => {
 
   let sheet = new SheetService(undefined, valuesOnSheet);
   const idsOnForm = ['17NM0001A', '17S0001A', ''];
-  let ids = new Ids(idsOnForm, sheet);
+  let ids = new IdsService(idsOnForm, sheet);
   let memberKeys: string[] = ids.getAllMemberKeys();
   console.log(memberKeys);
   const expected = ['a-1@example.com', 'a-2@example.com'];

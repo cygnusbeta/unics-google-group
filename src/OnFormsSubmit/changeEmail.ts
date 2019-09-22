@@ -6,7 +6,7 @@ import { Email } from '../email';
 import { Member } from '../member';
 import { Group } from '../group';
 import { logVar } from '../logger';
-import { Ids } from '../ids';
+import { IdsService } from '../ids.service';
 import Contact = GoogleAppsScript.Contacts.Contact;
 
 export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
@@ -18,7 +18,7 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
   let o = new ChangeEmail(e, ss);
 
   const idsOnForm: string[] = [this.id, this.id2, this.id3];
-  let ids = new Ids(idsOnForm, this.sheet);
+  let ids = new IdsService(idsOnForm, this.sheet);
 
   let memberKeys_groupKeys: { [key: string]: string[] } = {};
   try {
@@ -26,24 +26,22 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
     let newMember = new Member(newMemberKey);
 
     o.oldMemberKeys.push(...ids.getAllMemberKeys());
+
     if (o.oldMemberKeys.length === 0) {
-      let ids: string[] = [];
-      idsOnForm.forEach((id: string) => {
-        if (id) ids.push(id);
-      });
-      const idsString: string = ids.join(', ');
+      const idsString: string = ids.ids.join(', ');
       bodyArray.push(
         `エラー：学籍番号 (${idsString}) は${
-          ids.length >= 2 ? 'いずれも' : ''
+          ids.ids.length >= 2 ? 'いずれも' : ''
         }登録されていません。学籍番号が間違っていないか確認してもう一度やり直してください。`
       );
       const errMsg = `エラー：学籍番号 (${idsString}) は${
-        ids.length >= 2 ? 'いずれも' : ''
+        ids.ids.length >= 2 ? 'いずれも' : ''
       }登録されていません。学籍番号が間違っていないか確認してもう一度やり直してください。
 
 ${logVar({ id: this.id, id2: this.id2, id3: this.id3 })}`;
       throw new Error(errMsg);
     }
+
     for (let oldMemberKey of o.oldMemberKeys) {
       let oldMember = new Member(oldMemberKey);
       const groupKeys: string[] = oldMember.getGroupKeysBelongingTo();
@@ -145,7 +143,7 @@ export class ChangeEmail {
     });
   }
 
-  changeOnSS(ids: Ids): void {
+  changeOnSS(ids: IdsService): void {
     const values: string[][] = [[this.newEmail]];
     ids.rowsMatchedIds.forEach((row: number) => {
       ids.sheet.getRange(row, ids.memberKeyColumnIndex, 1, 1).setValues(values);

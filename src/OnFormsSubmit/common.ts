@@ -4,6 +4,7 @@ import { Member } from '../member';
 import { Group } from '../group';
 import { onChangeEmailFormSubmit } from './changeEmail';
 import { logVar } from '../logger';
+import { onChangePermissionFormSubmit } from './changePermission';
 
 declare var global: any;
 
@@ -21,6 +22,9 @@ global.onFormSubmit = (e: FormsOnSubmit): void => {
     case 'メールアドレスを変更':
       onChangeEmailFormSubmit(e);
       break;
+    case 'メール送信権限を変更':
+      onChangePermissionFormSubmit(e);
+      break;
     default:
       const errMsg = `該当のフォームがありません
 
@@ -32,7 +36,8 @@ ${logVar({ formType })}`;
 export const updateGroupsRoleSince2019 = (
   memberKeys: string[],
   newRole: 'MEMBER' | 'MANAGER'
-): void => {
+): string[] => {
+  let logArray4BodyArray: string[] = [];
   // 2019 年度からの全てのメーリングリストの送信権限を更新する。
   // 引数：学籍番号に対応する複数のメールアドレス → それが属するグループ全てに対して権限を更新
   memberKeys.forEach((memberKey: string) => {
@@ -41,9 +46,21 @@ export const updateGroupsRoleSince2019 = (
     for (let groupKey of groupKeys) {
       let group = new Group();
       group.initUsingEmail(groupKey);
-      if (member.getRoleIn(group) !== newRole) {
+      let nowRole = member.getRoleIn(group);
+      if (nowRole !== newRole) {
         member.updateRoleIn(group, newRole);
+        // - Google Group [2019 水戸] (unics_20xx_mito@googlegroups.com):
+        //
+        //   email@example.com: MEMBER -> MANAGER
+        //
+        //   正常に変更しました。
+        logArray4BodyArray.push(`- Google Group [${group.name}] (${group.groupKey}):
+
+  ${memberKey}: ${nowRole} -> ${newRole}
+
+  正常に変更しました。`);
       }
     }
   });
+  return logArray4BodyArray;
 };
