@@ -1,5 +1,6 @@
 import { logVar } from './logger';
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
+import Range = GoogleAppsScript.Spreadsheet.Range;
 
 export class SheetService {
   private sheet: Sheet;
@@ -42,7 +43,7 @@ export class SheetService {
     return this.lastRow;
   }
 
-  getRange(row: number, column: number, numRows: number, numColumns: number) {
+  getRange(row: number, column: number, numRows: number, numColumns: number): Range {
     return this.sheet.getRange(row, column, numRows, numColumns);
   }
 }

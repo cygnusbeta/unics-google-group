@@ -1,12 +1,12 @@
 import FormsOnSubmit = GoogleAppsScript.Events.FormsOnSubmit;
 import { SheetService } from '../sheet.service';
 import { SpreadSheetService } from '../spreadSheet.service';
-import { getAllMemberKeysUsingIds } from './common';
 import { formatError } from '../util';
 import { Email } from '../email';
 import { Member } from '../member';
 import { Group } from '../group';
 import { logVar } from '../logger';
+import { Ids } from '../ids';
 
 export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
   let bodyArray: string[] = ['────　スクリプトログ　─────'];
@@ -15,12 +15,14 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
 
   let ss: SpreadSheetService = new SpreadSheetService();
   let o = new ChangeEmail(e, ss);
+
+  const idsOnForm: string[] = [this.id, this.id2, this.id3];
+  let ids = new Ids(idsOnForm, this.sheet);
   try {
     const newMemberKey: string = o.newEmail;
     let newMember = new Member(newMemberKey);
 
-    const idsOnForm: string[] = [this.id, this.id2, this.id3];
-    o.oldMemberKeys.push(...getAllMemberKeysUsingIds(idsOnForm, this.sheet));
+    o.oldMemberKeys.push(...ids.getAllMemberKeys());
     if (o.oldMemberKeys.length === 0) {
       let ids: string[] = [];
       idsOnForm.forEach((id: string) => {
@@ -70,7 +72,7 @@ ${formatError(e)}`);
   }
 
   try {
-    o.changeOnSS();
+    o.changeOnSS(ids);
     bodyArray.push('スプレッドシート上のメールアドレスを変更しました。');
   } catch (e) {
     isErr = true;
@@ -123,7 +125,12 @@ export class ChangeEmail {
 
   changeOnContacts(): void {}
 
-  changeOnSS(): void {}
+  changeOnSS(ids: Ids): void {
+    const values: string[][] = [[this.newEmail]];
+    ids.rowsMatchedIds.forEach((row: number) => {
+      ids.sheet.getRange(row, ids.memberKeyColumnIndex, 1, 1).setValues(values);
+    });
+  }
 
   sendEmail(bodyArray: string[], isErr: boolean, errBodyArray: string[]): void {
     const tos = [this.newEmail, ...this.oldMemberKeys];

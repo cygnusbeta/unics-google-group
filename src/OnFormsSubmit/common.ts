@@ -2,7 +2,6 @@ import FormsOnSubmit = GoogleAppsScript.Events.FormsOnSubmit;
 import { onRegistrationFormSubmit } from './registration';
 import { Member } from '../member';
 import { Group } from '../group';
-import { SheetService } from '../sheet.service';
 import { onChangeEmailFormSubmit } from './changeEmail';
 import { logVar } from '../logger';
 
@@ -28,32 +27,6 @@ global.onFormSubmit = (e: FormsOnSubmit): void => {
 ${logVar({ formType })}`;
       throw new Error(errMsg);
   }
-};
-
-export const getAllMemberKeysUsingIds = (idsOnForm: string[], sheet: SheetService): string[] => {
-  if (idsOnForm.length !== 3) {
-    throw new Error('idsOnForm.length === 3 が予期されています。');
-  }
-  let ids: string[] = [];
-  idsOnForm.forEach((id: string) => {
-    if (id) ids.push(id);
-  });
-
-  const valuesOnSheet: string[][] = sheet.getValuesOnSheet();
-  const lastRow: number = sheet.getLastRowIndex();
-
-  const idColumnIndexes = [5, 6, 7];
-  const memberKeyColumnIndex = 1;
-  let memberKeys = new Set<string>();
-  for (let idColumnIndex of idColumnIndexes) {
-    for (let row = 0; row < lastRow + 1; row++) {
-      if (ids.indexOf(valuesOnSheet[row][idColumnIndex]) != -1) {
-        let memberKey = valuesOnSheet[row][memberKeyColumnIndex];
-        memberKeys.add(memberKey);
-      }
-    }
-  }
-  return Array.from(memberKeys.values());
 };
 
 export const updateGroupsRoleSince2019 = (

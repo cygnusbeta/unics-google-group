@@ -76,9 +76,7 @@ export class Member {
     console.log(`グループ ${group.name}`);
     const nowRole: 'MEMBER' | 'MANAGER' = this.getRoleIn(group);
     if (newRole === nowRole) {
-      console.info(
-        `グループ ${group.name} は既に ${nowRole} になっているのでスキップしました。`
-      );
+      console.info(`グループ ${group.name} は既に ${nowRole} になっているのでスキップしました。`);
       return;
     }
 
