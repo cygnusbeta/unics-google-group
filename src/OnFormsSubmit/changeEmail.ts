@@ -7,6 +7,7 @@ import { Member } from '../member';
 import { Group } from '../group';
 import { logVar } from '../logger';
 import { Ids } from '../ids';
+import Contact = GoogleAppsScript.Contacts.Contact;
 
 export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
   let bodyArray: string[] = ['────　スクリプトログ　─────'];
@@ -18,6 +19,8 @@ export const onChangeEmailFormSubmit = (e: FormsOnSubmit): void => {
 
   const idsOnForm: string[] = [this.id, this.id2, this.id3];
   let ids = new Ids(idsOnForm, this.sheet);
+
+  let memberKeys_groupKeys: { [key: string]: string[] } = {};
   try {
     const newMemberKey: string = o.newEmail;
     let newMember = new Member(newMemberKey);
@@ -44,6 +47,8 @@ ${logVar({ id: this.id, id2: this.id2, id3: this.id3 })}`;
     for (let oldMemberKey of o.oldMemberKeys) {
       let oldMember = new Member(oldMemberKey);
       const groupKeys: string[] = oldMember.getGroupKeysBelongingTo();
+      memberKeys_groupKeys[oldMemberKey] = groupKeys;
+
       for (let groupKey of groupKeys) {
         let group = new Group();
         group.initUsingEmail(groupKey);
@@ -82,7 +87,7 @@ ${formatError(e)}`);
   }
 
   try {
-    o.changeOnContacts();
+    o.changeOnContacts(memberKeys_groupKeys);
     bodyArray.push('Google Contacts のメールアドレスを変更しました。');
   } catch (e) {
     isErr = true;
@@ -123,7 +128,22 @@ export class ChangeEmail {
     }
   }
 
-  changeOnContacts(): void {}
+  changeOnContacts(oldMemberKeys_groupKeys: { [key: string]: string[] }): void {
+    Object.keys(oldMemberKeys_groupKeys).forEach((oldMemberkey: string) => {
+      let groupKeys: string[] = oldMemberKeys_groupKeys[oldMemberkey];
+      groupKeys.forEach((groupKey: string) => {
+        let group = new Group();
+        group.initUsingEmail(groupKey);
+        let contactGroup = ContactsApp.getContactGroup(group.name);
+        let oldContacts = contactGroup.getContacts();
+        oldContacts.forEach((oldContact: Contact) => {
+          oldContact.removeFromGroup(contactGroup);
+          let newContact = ContactsApp.createContact('', this.name, this.newEmail);
+          newContact.addToGroup(contactGroup);
+        });
+      });
+    });
+  }
 
   changeOnSS(ids: Ids): void {
     const values: string[][] = [[this.newEmail]];
