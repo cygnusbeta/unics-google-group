@@ -37,9 +37,16 @@ ${logVar({ id: this.id, id2: this.id2, id3: this.id3 })}`;
       throw new Error(errMsg);
     }
 
+    bodyArray.push('メール送信権限の変更処理');
     let logArray4BodyArray = updateGroupsRoleSince2019(o.memberKeys, newRole);
-    bodyArray.push(...logArray4BodyArray);
-    bodyArray.push('メール送信権限を設定しました。');
+    if (logArray4BodyArray.length === 0) {
+      bodyArray.push(
+        '全てのメーリングリストのグループのメール送信権限は既に回答された通りになっています。変更対象のグループはありませんでした。'
+      );
+    } else {
+      bodyArray.push(...logArray4BodyArray);
+      bodyArray.push('メール送信権限を変更しました。');
+    }
   } catch (e) {
     isErr = true;
     bodyArray.push('エラー：メール送信権限の設定に失敗しました。');
@@ -49,11 +56,11 @@ ${formatError(e)}`);
 
   try {
     o.changeOnSS(ids);
-    bodyArray.push('スプレッドシート上のメールアドレスを変更しました。');
+    bodyArray.push('スプレッドシート上のメール送信権限を変更しました。');
   } catch (e) {
     isErr = true;
-    bodyArray.push('エラー：スプレッドシート上のメールアドレスの変更に失敗しました。');
-    errBodyArray.push(`エラー：スプレッドシート上のメールアドレスの変更に失敗しました。
+    bodyArray.push('エラー：スプレッドシート上のメール送信権限の変更に失敗しました。');
+    errBodyArray.push(`エラー：スプレッドシート上のメール送信権限の変更に失敗しました。
 ${formatError(e)}`);
   }
 

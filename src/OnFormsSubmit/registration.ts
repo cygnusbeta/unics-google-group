@@ -33,18 +33,29 @@ ${formatError(e)}`);
   const newRole: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
   if (newRole === 'MANAGER') {
     // '希望する' にチェックをつけた人のみ、その人が入っている過去のメーリングリストに遡ってメール送信権限をつけにいく
+    const idsOnForm: string[] = [this.id, this.id2, this.id3];
+    let ids = new IdsService(idsOnForm, this.sheet);
     try {
-      const idsOnForm: string[] = [this.id, this.id2, this.id3];
-      let ids = new IdsService(idsOnForm, this.sheet);
       const memberKeys: string[] = ids.getAllMemberKeys();
-      updateGroupsRoleSince2019(memberKeys, newRole);
-      bodyArray.push('メール送信権限を設定しました。');
+
+      bodyArray.push('メール送信権限の変更処理');
+      let logArray4BodyArray = updateGroupsRoleSince2019(memberKeys, newRole);
+      if (logArray4BodyArray.length === 0) {
+        bodyArray.push(
+          '参加されているメーリングリストのグループのメール送信権限は既に回答された通りになっています。変更対象のグループはありませんでした。'
+        );
+      } else {
+        bodyArray.push(...logArray4BodyArray);
+        bodyArray.push('メール送信権限を変更しました。');
+      }
     } catch (e) {
       isErr = true;
       bodyArray.push('エラー：メール送信権限の設定に失敗しました。');
       errBodyArray.push(`エラー：メール送信権限の設定に失敗しました。
 ${formatError(e)}`);
     }
+
+    o.changeOnSS(ids);
   }
 
   try {
@@ -102,6 +113,13 @@ export class Registration {
       this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
       this.formType = e.namedValues['確認'][0];
     }
+  }
+
+  changeOnSS(ids: IdsService): void {
+    const values: string[][] = [[this.permission]];
+    ids.rowsMatchedIds.forEach((row: number) => {
+      ids.sheet.getRange(row, ids.permissionColumnIndex, 1, 1).setValues(values);
+    });
   }
 
   add2SheetSeparate(ss: SpreadSheetService): void {
