@@ -33,8 +33,6 @@ export class SheetService {
       for (let j = 0; j < this.valuesOnSheet.length; j++) {
         if (this.valuesOnSheet[j][0] !== '') {
           lastRow = Math.max(lastRow, j);
-        } else {
-          break;
         }
       }
       logVar({ lastRow });
