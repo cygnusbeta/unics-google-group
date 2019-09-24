@@ -14,10 +14,10 @@ export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
   let isErr: boolean = false;
   let errBodyArray = [];
 
-  const role: 'MEMBER' | 'MANAGER' = this.permission === '希望する' ? 'MANAGER' : 'MEMBER';
-
   let ss: SpreadSheetService = new SpreadSheetService();
   let o = new Registration(e, ss);
+  const role: 'MEMBER' | 'MANAGER' = o.permission === '希望する' ? 'MANAGER' : 'MEMBER';
+
   try {
     let member = new Member(o.email);
     let group = new Group();
