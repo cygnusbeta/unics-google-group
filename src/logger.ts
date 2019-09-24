@@ -1,14 +1,18 @@
 export const logVar = (obj: object): string => {
   const varName: string = Object.keys(obj)[0];
   const log = `${varName}: ${obj[varName]}`;
-  Logger.log(log);
+  try {
+    Logger.log(log);
+  } catch (e) {}
   return log;
 };
 
 export const logVarL = (obj: object): string => {
   const varName: string = Object.keys(obj)[0];
   const log = `${varName}: ${obj[varName]}`;
-  Logger.log(log);
+  try {
+    Logger.log(log);
+  } catch (e) {}
   return `${log}\n`; // log をつなげた後、最後に .trim(); するのを忘れずに
 };
 
@@ -20,6 +24,8 @@ export const logVars = (obj: object): string => {
     logs += `${log}\n`;
   });
   logs = logs.trim();
-  Logger.log(logs);
+  try {
+    Logger.log(logs);
+  } catch (e) {}
   return logs;
 };
