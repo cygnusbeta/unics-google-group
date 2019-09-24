@@ -42,6 +42,12 @@ export class SheetService {
   }
 
   getRange(row: number, column: number, numRows: number, numColumns: number): Range {
-    return this.sheet.getRange(row, column, numRows, numColumns);
+    // row: Integer | The starting row index of the range; row indexing
+    // starts with 0.
+    // column: Integer | The starting column index of the range; column
+    // indexing starts with 0.
+    // numRows: Integer | The number of rows to return.
+    // numColumns: Integer | The number of columns to return.
+    return this.sheet.getRange(row + 1, column + 1, numRows, numColumns);
   }
 }
