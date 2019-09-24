@@ -38,7 +38,7 @@ ${logs}`;
         throw new Error(errMsg);
       }
       sheet = this.ss.insertSheet(sheetName);
-      sheet.getRange(0, 0, 1, row0Values[0].length).setValues(row0Values);
+      sheet.getRange(1, 1, 1, row0Values[0].length).setValues(row0Values);
     }
     return new SheetService(sheet);
   }
