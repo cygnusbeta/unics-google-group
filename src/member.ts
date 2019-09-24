@@ -73,7 +73,7 @@ export class Member {
   }
 
   updateRoleIn(group: Group, newRole: 'MEMBER' | 'MANAGER'): void {
-    console.log(`グループ ${group.name}`);
+    Logger.log(`グループ ${group.name}`);
     const nowRole: 'MEMBER' | 'MANAGER' = this.getRoleIn(group);
     if (newRole === nowRole) {
       console.info(`グループ ${group.name} は既に ${nowRole} になっているのでスキップしました。`);
