@@ -56,8 +56,6 @@ urlFetch.service.ts において oAuth2Service === undefined となっていま�
     if (resCode === this.successResCode) {
       this.throwErr();
     }
-
-    this.oAuth2Service.reset();
   }
 
   throwErr(): void {
