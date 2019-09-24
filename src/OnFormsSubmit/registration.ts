@@ -134,7 +134,7 @@ export class Registration {
     ];
     let sheetSeparate: SheetService = ss.getSheet(sheetName, true, row0Values);
     const lastRow = sheetSeparate.getLastRowIndex();
-    this.sheet.getRange(lastRow + 1, 0, 1, values[0].length).setValues(values);
+    sheetSeparate.getRange(lastRow + 1, 0, 1, values[0].length).setValues(values);
   }
 
   add2Contacts(): void {
