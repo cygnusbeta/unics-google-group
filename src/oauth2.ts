@@ -9,7 +9,7 @@ export const getOAuth2Service = (): OAuth2Service => {
   // persisting the authorized token, so ensure it is unique within the
   // scope of the property store.
   return (
-    OAuth2.createService('apps script')
+    OAuth2.createService('appsscript')
 
       // Set the endpoint URLs, which are the same for all Google services.
       .setAuthorizationBaseUrl('https://accounts.google.com/o/oauth2/auth')
