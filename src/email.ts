@@ -39,6 +39,8 @@ ${log4Vars}`);
     }
 
     if (this.isErr) {
+      errBodyArray.push('────　Execution transcript log　─────');
+      errBodyArray.push(Logger.getLog());
       errBodyArray.push('────　フォーム回答者に送信されたメール　─────');
       errBodyArray.push(...bodyArray);
 
