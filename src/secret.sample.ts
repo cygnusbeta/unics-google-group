@@ -5,7 +5,9 @@ export default {
   errTo: 'example+gaserr@example.com',
   discordLink: 'https://discord.gg/xxxxxxx',
   formsLink:
-   'https://docs.google.com/document/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/edit'
+   'https://docs.google.com/document/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/edit',
+  clientId: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com',
+  clientSecret: 'xxxxxxxxxxxxxxxxxxxxxxxx'
 };
 
 */

@@ -1,5 +1,7 @@
 import { logVarL, logVars } from './logger';
 import HTTPResponse = GoogleAppsScript.URL_Fetch.HTTPResponse;
+import OAuth2Service = GoogleAppsScriptOAuth2.OAuth2Service;
+import { getOAuth2Service } from './oauth2';
 
 export class UrlFetchService {
   private url: string;
@@ -10,6 +12,7 @@ export class UrlFetchService {
 
   private log: string;
   public text: string;
+  private oAuth2Service: OAuth2Service;
 
   constructor(
     url: string,
@@ -25,6 +28,20 @@ export class UrlFetchService {
     this.otherVars4Log = otherVars4Log;
     this.log = '';
 
+    this.oAuth2Service = getOAuth2Service();
+    if (this.oAuth2Service === undefined) {
+      const logOtherVars: string = logVars(this.otherVars4Log);
+      const msg = `${this.errMsg}
+
+urlFetch.service.ts において oAuth2Service === undefined となっています。認証し直してください。
+
+        ${logOtherVars}`;
+      throw new Error(msg);
+    }
+    this.params['headers'] = {
+      Authorization: `Bearer ${this.oAuth2Service.getAccessToken()}`
+    };
+
     this.params['muteHttpExceptions'] = true;
   }
 
@@ -39,6 +56,8 @@ export class UrlFetchService {
     if (resCode === this.successResCode) {
       this.throwErr();
     }
+
+    this.oAuth2Service.reset();
   }
 
   throwErr(): void {
@@ -46,8 +65,8 @@ export class UrlFetchService {
     this.log = this.log.trim();
     const msg = `${this.errMsg}
 
-${this.log}
-${logOtherVars}`;
+        ${this.log}
+        ${logOtherVars}`;
     throw new Error(msg);
   }
 }
