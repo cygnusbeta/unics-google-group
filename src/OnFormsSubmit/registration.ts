@@ -175,11 +175,11 @@ export class Registration {
     const text = `UNICS 入会・所属継続用フォーム: ${
       this.name
     } さんの回答を受信しました。mail.unics 管理者は Google グループへ追加してください。
-[フォーム回答一覧](<https://docs.google.com/spreadsheets/d/1jGVczIKaBKaPL_Pe3HzO376GbXhMhtfMo_A5t3W9kE0/edit>) / メンバー追加:[${getNowSchoolYear()}${
+[フォーム回答一覧](<https://docs.google.com/spreadsheets/d/1jGVczIKaBKaPL_Pe3HzO376GbXhMhtfMo_A5t3W9kE0/edit>) / メンバー追加: [${getNowSchoolYear()}${
       this.campus
     }](<https://groups.google.com/forum/#!managemembers/unics-${getNowSchoolYear()}-${campusToAlphabet(
       this.campus
-    )}/add>) [${getNowSchoolYear()}全体](<https://groups.google.com/forum/#!managemembers/unics-${getNowSchoolYear()}/add>)　/ [Google グループ](<https://groups.google.com/forum/#!myforums>)`;
+    )}/add>) [${getNowSchoolYear()}全体](<https://groups.google.com/forum/#!managemembers/unics-${getNowSchoolYear()}/add>) / [Google グループ](<https://groups.google.com/forum/#!myforums>)`;
     discord.sendMessage(text, webhookUrl, username);
   }
 
