@@ -126,11 +126,27 @@ export class Registration {
   add2SheetSeparate(ss: SpreadSheetService): void {
     //　フォームへの回答を同じスプレッドシートの水戸と日立のタブ（シート）に振り分ける
     const values: string[][] = [
-      [this.name, this.phonetic, this.year, this.id, this.department, this.campus as string]
+      [
+        this.name,
+        this.phonetic,
+        this.year,
+        this.id,
+        this.department,
+        this.campus as string,
+        `${this.name} <${this.email}>`
+      ]
     ];
     const sheetName = `${getNowSchoolYear()} ${this.campus}`;
     const row0Values: string[][] = [
-      ['氏名', '氏名のふりがな', '学年', '学籍番号', '学部学科課程', '所属キャンパス']
+      [
+        '氏名',
+        '氏名のふりがな',
+        '学年',
+        '学籍番号',
+        '学部学科課程',
+        '所属キャンパス',
+        'Google グループ登録用'
+      ]
     ];
     let sheetSeparate: SheetService = ss.getSheet(sheetName, true, row0Values);
     const lastRow = sheetSeparate.getLastRowIndex();
