@@ -140,6 +140,7 @@ export class Registration {
   add2Contacts(): void {
     let contact = ContactsApp.createContact('', this.name, this.email);
     let group = ContactsApp.getContactGroup(`${getNowSchoolYear()} ${this.campus}`);
+    if (!group) group = ContactsApp.createContactGroup(`${getNowSchoolYear()} ${this.campus}`);
     Logger.log(group);
     contact.addToGroup(group);
   }
