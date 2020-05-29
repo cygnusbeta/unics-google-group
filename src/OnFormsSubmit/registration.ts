@@ -152,17 +152,12 @@ export class Registration {
     bodyArray.unshift(`${this.name} さん
 
 UNICS へのご入会・所属継続、ありがとうございます。
-このメールは ${getNowSchoolYear()}年度 PC サークル UNICS 入会・所属継続用フォーム ≪Google グループ対応版≫ へ回答された方に自動で送信されています。
+このメールは ${getNowSchoolYear()}年度 PC サークル UNICS 入会・所属継続用フォームへ回答された方に自動で送信されています。
 
 ＜メーリングリスト追加について＞
-ご回答いただいたメールアドレスを、UNICS ${
+ご回答いただいたメールアドレスは、UNICS ${
       this.campus
-    } ${getNowSchoolYear()}年度のメーリングリスト（Google グループ）に追加しました。
-
-＜メーリングリストの各種操作について＞
-メーリングリスト（Google グループ）のメールアドレス変更や送信権限変更等操作は下のリンクから行えます。
-
-${secret.formsLink}
+    } ${getNowSchoolYear()}年度のメーリングリスト（Google グループ）に追加されます。
 
 ＜Discord について＞
 UNICS ではチャットツールに Discord を使用しています。招待リンクをお送りしますので、まだ登録していない方は、ここからご登録ください。
