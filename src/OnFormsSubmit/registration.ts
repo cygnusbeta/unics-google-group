@@ -1,22 +1,23 @@
 import FormsOnSubmit = GoogleAppsScript.Events.FormsOnSubmit;
 import { Member } from '../member';
 import { Group } from '../group';
-import { formatError, getNowSchoolYear } from '../util';
+import { campusToAlphabet, formatError, getNowSchoolYear } from '../util';
 import secret from '../secret';
 import { SpreadSheetService } from '../spreadSheet.service';
 import { SheetService } from '../sheet.service';
 import { updateGroupsRoleSince2019 } from './common';
 import { Email } from '../email';
 import { IdsService } from '../ids.service';
+import { DiscordService } from '../discord.service';
 
 export const onRegistrationFormSubmit = (e: FormsOnSubmit): void => {
-  let bodyArray: string[] = ['────　スクリプトログ　─────'];
+  let bodyArray: string[] = ['────　スクリプトログ(管理者用)　─────'];
   let isErr: boolean = false;
   let errBodyArray = [];
 
   let ss: SpreadSheetService = new SpreadSheetService();
   let o = new Registration(e, ss);
-  const role: 'MEMBER' | 'MANAGER' = o.permission === '希望する' ? 'MANAGER' : 'MEMBER';
+  // const role: 'MEMBER' | 'MANAGER' = o.permission === '希望する' ? 'MANAGER' : 'MEMBER';
 
   //   try {
   //     let member = new Member(o.email);
@@ -79,6 +80,16 @@ ${formatError(e)}`);
 ${formatError(e)}`);
   }
 
+  try {
+    o.sendNotificationToDiscord();
+    bodyArray.push('フォームの回答を Discord へ通知しました。');
+  } catch (e) {
+    isErr = true;
+    bodyArray.push('エラー：フォームの回答の Discord へ通知に失敗しました。');
+    errBodyArray.push(`エラー：フォームの回答の Discord へ通知に失敗しました。
+${formatError(e)}`);
+  }
+
   o.sendEmail(bodyArray, isErr, errBodyArray);
 };
 
@@ -86,13 +97,14 @@ export class Registration {
   public email: string;
   private name: string;
   private phonetic: string;
+  private sex: string;
   private year: string;
   public id: string;
-  public id2: string;
-  public id3: string;
+  // public id2: string;
+  // public id3: string;
   private department: string;
   public campus: '水戸' | '日立';
-  public permission: '希望する' | '';
+  // public permission: '希望する' | '';
   private formType: string;
 
   private sheet: SheetService;
@@ -105,23 +117,24 @@ export class Registration {
       this.email = e.namedValues['メールアドレス'][0];
       this.name = e.namedValues['氏名'][0];
       this.phonetic = e.namedValues['氏名のふりがな'][0];
+      this.sex = e.namedValues['性別'][0];
       this.year = e.namedValues['学年'][0];
       this.id = e.namedValues['学籍番号'][0];
-      this.id2 = e.namedValues['前の学籍番号'][0];
-      this.id3 = e.namedValues['前々の学籍番号'][0];
+      // this.id2 = e.namedValues['前の学籍番号'][0];
+      // this.id3 = e.namedValues['前々の学籍番号'][0];
       this.department = e.namedValues['学部学科課程'][0];
       this.campus = e.namedValues['所属キャンパス'][0] as '水戸' | '日立';
-      this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
+      // this.permission = e.namedValues['メール送信権限'][0] as '希望する' | '';
       this.formType = e.namedValues['確認'][0];
     }
   }
 
-  changeOnSS(ids: IdsService): void {
-    const values: string[][] = [[this.permission]];
-    ids.rowsMatchedIds.forEach((row: number) => {
-      ids.sheet.getRange(row, ids.permissionColumnIndex, 1, 1).setValues(values);
-    });
-  }
+  // changeOnSS(ids: IdsService): void {
+  //   const values: string[][] = [[this.permission]];
+  //   ids.rowsMatchedIds.forEach((row: number) => {
+  //     ids.sheet.getRange(row, ids.permissionColumnIndex, 1, 1).setValues(values);
+  //   });
+  // }
 
   add2SheetSeparate(ss: SpreadSheetService): void {
     //　フォームへの回答を同じスプレッドシートの水戸と日立のタブ（シート）に振り分ける
@@ -129,6 +142,7 @@ export class Registration {
       [
         this.name,
         this.phonetic,
+        this.sex,
         this.year,
         this.id,
         this.department,
@@ -141,6 +155,7 @@ export class Registration {
       [
         '氏名',
         '氏名のふりがな',
+        '性別',
         '学年',
         '学籍番号',
         '学部学科課程',
@@ -151,6 +166,21 @@ export class Registration {
     let sheetSeparate: SheetService = ss.getSheet(sheetName, true, row0Values);
     const lastRow = sheetSeparate.getLastRowIndex();
     sheetSeparate.getRange(lastRow + 1, 0, 1, values[0].length).setValues(values);
+  }
+
+  sendNotificationToDiscord(): void {
+    let discord = new DiscordService();
+    const webhookUrl = `${secret.discorkWebhookUrl}`;
+    const username = 'Google Forms Bot';
+    const text = `UNICS 入会・所属継続用フォーム: ${
+      this.name
+    } さんの回答を受信しました。mail.unics 管理者は Google グループへ追加してください。
+[フォーム回答一覧](<https://docs.google.com/spreadsheets/d/1jGVczIKaBKaPL_Pe3HzO376GbXhMhtfMo_A5t3W9kE0/edit>) / [メンバー追加(${getNowSchoolYear()}${
+      this.campus
+    })](<https://groups.google.com/forum/#!managemembers/unics-${getNowSchoolYear()}-${campusToAlphabet(
+      this.campus
+    )}/add>) / [Google グループ](<https://groups.google.com/forum/#!myforums>)`;
+    discord.sendMessage(text, webhookUrl, username);
   }
 
   add2Contacts(): void {
@@ -172,7 +202,7 @@ UNICS へのご入会・所属継続、ありがとうございます。
 このメールは ${getNowSchoolYear()}年度 PC サークル UNICS 入会・所属継続用フォームへ回答された方に自動で送信されています。
 
 ＜メーリングリスト追加について＞
-ご回答いただいたメールアドレスは、UNICS ${
+ご回答いただいたメールアドレスは、追って UNICS ${
       this.campus
     } ${getNowSchoolYear()}年度のメーリングリスト（Google グループ）に追加されます。
 

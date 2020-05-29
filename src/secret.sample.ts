@@ -7,7 +7,10 @@ export default {
   formsLink:
    'https://docs.google.com/document/d/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/edit',
   clientId: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com',
-  clientSecret: 'xxxxxxxxxxxxxxxxxxxxxxxx'
+  clientSecret: 'xxxxxxxxxxxxxxxxxxxxxxxx',
+  discorkWebhookUrl:
+    'https://discord.com/api/webhooks/xxxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
 };
 
 */

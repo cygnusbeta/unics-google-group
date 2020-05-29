@@ -1,3 +1,5 @@
+import {logVar} from "./logger";
+
 export const getNowSchoolYear = (date = new Date()) => {
   const month = date.getMonth() + 1;
   date.setMonth(month - 4);
@@ -38,4 +40,20 @@ export const formatError = (e: { name: string; lineNumber: number; message: stri
 e.name: ${e.name}
 e.lineNumber: ${e.lineNumber}
 e.message: ${e.message}`;
+};
+
+export const campusToAlphabet = (campus: string): string => {
+  switch (campus) {
+    case '水戸':
+      return 'mito';
+
+    case '日立':
+      return 'hitachi';
+
+    default:
+      const errMsg = `グループの初期化に失敗しました。所属キャンパスの値が不正です。
+
+${logVar({ campus })}`;
+      throw new Error(errMsg);
+  }
 };
