@@ -147,7 +147,7 @@ export class Registration {
         this.id,
         this.department,
         this.campus as string,
-        `${this.name} <${this.email}>`
+        `${this.name} <${this.email}>,`
       ]
     ];
     const sheetName = `${getNowSchoolYear()} ${this.campus}`;
@@ -172,9 +172,7 @@ export class Registration {
     let discord = new DiscordService();
     const webhookUrl = `${secret.discorkWebhookUrl}`;
     const username = 'Google Forms Bot';
-    const text = `UNICS 入会・所属継続用フォーム: ${
-      this.name
-    } さんの回答を受信しました。mail.unics 管理者は Google グループへ追加してください。
+    const text = `UNICS 入会・所属継続用フォーム: 新しい回答がありました。mail.unics 管理者は Google グループへ追加してください。
 [フォーム回答一覧](<https://docs.google.com/spreadsheets/d/1jGVczIKaBKaPL_Pe3HzO376GbXhMhtfMo_A5t3W9kE0/edit>) / メンバー追加: [${getNowSchoolYear()}${
       this.campus
     }](<https://groups.google.com/forum/#!managemembers/unics-${getNowSchoolYear()}-${campusToAlphabet(
