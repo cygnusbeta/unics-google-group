@@ -170,7 +170,7 @@ export class Registration {
 
   sendNotificationToDiscord(): void {
     let discord = new DiscordService();
-    const webhookUrl = `${secret.discorkWebhookUrl}`;
+    const webhookUrl = `${secret.discordWebhookUrl}`;
     const username = 'Google Forms Bot';
     const text = `UNICS 入会・所属継続用フォーム: 新しい回答がありました。mail.unics 管理者は Google グループへ追加してください。
 [フォーム回答一覧](<https://docs.google.com/spreadsheets/d/1jGVczIKaBKaPL_Pe3HzO376GbXhMhtfMo_A5t3W9kE0/edit>) / メンバー追加: [${getNowSchoolYear()}${
